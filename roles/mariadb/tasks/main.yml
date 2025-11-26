@@ -1,0 +1,30 @@
+---
+# Rôle : mariadb
+# Objectif : installer et démarrer MariaDB
+
+- name: Installer MariaDB (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: mariadb-server
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Installer MariaDB (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: mariadb-server
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: S'assurer que MariaDB est démarré et activé
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: true
+  when: ansible_os_family == "Debian"
+
+- name: S'assurer que MariaDB (mysqld) est démarré et activé (RedHat)
+  ansible.builtin.service:
+    name: mysqld
+    state: started
+    enabled: true
+  when: ansible_os_family == "RedHat"

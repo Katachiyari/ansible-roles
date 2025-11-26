@@ -1,0 +1,16 @@
+---
+# Rôle : git
+# Objectif : installer Git et éventuellement le configurer
+
+- name: Installer Git (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Installer Git (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: git
+    state: present
+  when: ansible_os_family == "RedHat"

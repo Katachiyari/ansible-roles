@@ -1,0 +1,30 @@
+---
+# Rôle : apache
+# Objectif : installer et démarrer Apache
+
+- name: Installer Apache (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: apache2
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Installer Apache (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: httpd
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Sassurer quApache est démarré et activé (Debian)
+  ansible.builtin.service:
+    name: apache2
+    state: started
+    enabled: true
+  when: ansible_os_family == "Debian"
+
+- name: Sassurer quApache est démarré et activé (RedHat)
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: true
+  when: ansible_os_family == "RedHat"

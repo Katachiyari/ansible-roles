@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: git
+  author: ton_nom
+  description: "Installe et configure Git"
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+dependencies: []

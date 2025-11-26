@@ -1,0 +1,4 @@
+---
+# Variables par défaut pour le rôle mariadb
+
+mariadb_root_password: ""

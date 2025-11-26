@@ -1,0 +1,5 @@
+---
+# Variables par défaut pour le rôle git
+
+git_config_user_name: ""
+git_config_user_email: ""

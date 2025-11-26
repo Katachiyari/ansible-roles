@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  role_name: user
+  author: ton_nom
+  description: "Gère les utilisateurs de base"
+  license: MIT
+  min_ansible_version: 2.9
+dependencies: []
