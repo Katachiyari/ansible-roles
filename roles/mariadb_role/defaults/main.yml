@@ -1,0 +1,41 @@
+---
+# Activer ou non la gestion de MariaDB par ce rôle
+mariadb_role_manage: true
+
+# Installer ou non MariaDB (serveur)
+mariadb_role_install_server: true
+
+# S'assurer que le service est démarré
+mariadb_role_ensure_running: true
+
+# Adresse de bind du serveur MariaDB
+# Si tu veux écouter sur toutes les interfaces : 0.0.0.0
+# Si tu laisses vide, on ne modifie pas le bind-address (comportement défaut de la distrib)
+mariadb_role_bind_address: ""
+
+# Port d'écoute de MariaDB
+mariadb_role_port: 3306
+
+# Paramètres de connexion root locaux (pour les modules community.mysql)
+# ATTENTION : dans un vrai environnement, stocker ces infos dans Ansible Vault
+mariadb_role_root_user: "root"
+mariadb_role_root_password: ""
+mariadb_role_root_login_host: "localhost"
+mariadb_role_root_login_unix_socket: "/var/run/mysqld/mysqld.sock"
+
+# Création d'utilisateurs
+# Chaque utilisateur est un dict :
+# - name (obligatoire)
+# - password (obligatoire dans un vrai contexte)
+# - host (optionnel, par défaut '%')
+# - priv (optionnel, ex: "*.*:ALL,GRANT" ou "ma_base.*:ALL"
+# - state (optional, present/absent, par défaut present)
+mariadb_role_users: []
+
+# Création de bases de données
+# Chaque base est un dict :
+# - name (obligatoire)
+# - encoding (optionnel, ex: utf8mb4)
+# - collation (optionnel)
+# - state (present/abs
+

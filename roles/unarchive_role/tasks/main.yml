@@ -1,0 +1,40 @@
+---
+# Rôle : unarchive_role
+# Objectif : extraire des archives de manière dynamique et avancée
+
+- name: Ne rien faire si unarchive_role_manage est à false
+  ansible.builtin.debug:
+    msg: "unarchive_role_manage est à false : aucune archive extraite."
+  when: not unarchive_role_manage
+  tags: [unarchive_role, unarchive]
+
+- name: Aucune archive à gérer
+  ansible.builtin.debug:
+    msg: "unarchive_role_items est vide : aucune opération d'extraction."
+  when:
+    - unarchive_role_manage
+    - unarchive_role_items | length == 0
+  tags: [unarchive_role, unarchive]
+
+- name: Extraire les archives définies dans unarchive_role_items
+  ansible.builtin.unarchive:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: "{{ item.remote_src | default(false) }}"
+    owner: "{{ item.owner | default(omit) }}"
+    group: "{{ item.group | default(omit) }}"
+    mode: "{{ item.mode | default(omit) }}"
+    creates: "{{ item.creates | default(omit) }}"
+    extra_opts: "{{ item.extra_opts | default(omit) }}"
+    exclude: "{{ item.exclude | default(omit) }}"
+    include: "{{ item.include | default(omit) }}"
+    keep_newer: "{{ item.keep_newer | default(omit) }}"
+    list_files: "{{ item.list_files | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit) }}"
+  loop: "{{ unarchive_role_items }}"
+  loop_control:
+    label: "{{ item.src }} -> {{ item.dest }}"
+  when:
+    - unarchive_role_manage
+    - unarchive_role_items | length > 0
+  tags: [unarchive_role, unarchive]

@@ -1,0 +1,22 @@
+---
+# Rôle : file_role
+# Objectif : gérer des fichiers/répertoires/liens de manière dynamique
+
+- name: Afficher un message si aucun item n'est fourni
+  ansible.builtin.debug:
+    msg: "Aucun élément à gérer (file_role_items est vide)."
+  when: file_role_items | length == 0
+
+- name: Gérer les fichiers/répertoires/liens définis dans file_role_items
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "{{ item.state | default('file') }}"
+    owner: "{{ item.owner | default(omit) }}"
+    group: "{{ item.group | default(omit) }}"
+    mode: "{{ item.mode | default(omit) }}"
+    src: "{{ item.src | default(omit) }}"
+    recurse: "{{ item.recurse | default(omit) }}"
+  loop: "{{ file_role_items }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: file_role_items | length > 0

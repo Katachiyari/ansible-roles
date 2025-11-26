@@ -1,0 +1,9 @@
+---
+# Liste de fichiers à copier
+# Chaque élément de la liste est un dictionnaire avec :
+# - src : chemin dans templates/ ou files/
+# - dest : chemin sur la machine cible
+# - template : true/false (si true -> module template, sinon -> copy)
+# - owner, group, mode : optionnels
+
+copy_dynamic_items: []

@@ -1,0 +1,69 @@
+# Exemple d'utilisation avancée de git_clone_role
+---
+- name: Exemple d'utilisation avancée de git_clone_role
+  hosts: all
+  become: false   # pas forcément besoin de sudo pour cloner dans le HOME
+
+  vars:
+    git_clone_role_manage: true
+
+    git_clone_role_repos:
+      # 1. Clone simple d'un dépôt public sur GitHub
+      - repo: "https://github.com/ansible/ansible-examples.git"
+        dest: "/tmp/ansible-examples"
+
+      # 2. Clone d'une branche spécifique dans un dossier projet
+      - repo: "https://github.com/ansible/ansible.git"
+        dest: "/tmp/ansible-src"
+        version: "stable-2.9"
+        update: true
+
+      # 3. Exemple avec clé SSH (dépôt privé) - les chemins sont à adapter
+      #   (tu peux commenter/décommenter ce bloc selon ton environnement)
+      - repo: "git@github.com:TonCompte/mon-depot-prive.git"
+        dest: "/home/{{ ansible_user_id }}/projects/mon-depot-prive"
+        version: "main"
+        key_file: "/home/{{ ansible_user_id }}/.ssh/id_rsa"
+        accept_hostkey: true
+        update: true
+        clone: true
+
+  roles:
+    - role: git_clone_role
+
+#######################################################################################
+    A. Utilisation minimale (juste un dépôt)
+YAML
+- hosts: all
+  vars:
+    git_clone_role_repos:
+      - repo: "https://github.com/ansible/ansible.git"
+        dest: "/tmp/ansible"
+
+  roles:
+    - role: git_clone_role
+Ici tu n’utilises que :
+
+repo
+dest
+Tout le reste → valeurs par défaut (version: HEAD, update: true, etc.).
+#########################################################################################
+B. Désactiver complètement le rôle dans un contexte
+YAML
+- hosts: all
+  vars:
+    git_clone_role_manage: false
+
+  roles:
+    - role: git_clone_role
+Grâce au when: not git_clone_role_manage, le rôle ne touche à rien.
+########################################################################################
+C. Liste vide = rôle inoffensif mais prêt
+YAML
+- hosts: all
+  vars:
+    git_clone_role_repos: []
+
+  roles:
+    - role: git_clone_role
+Le rôle affiche juste un message “aucun dépôt à gérer”.

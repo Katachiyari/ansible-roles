@@ -1,0 +1,90 @@
+# Exemple d'utilisation avancée de mariadb_role
+---
+- name: Déploiement MariaDB complet (bind 0.0.0.0, user ALL PRIV, DB + table)
+  hosts: dbservers
+  become: true
+
+  vars:
+    # Gestion globale
+    mariadb_role_manage: true
+    mariadb_role_install_server: true
+    mariadb_role_ensure_running: true
+
+    # Bind sur toutes les interfaces (attention en prod : firewall impératif)
+    mariadb_role_bind_address: "0.0.0.0"
+    mariadb_role_port: 3306
+
+    # Paramètres de connexion root (à sécuriser via Vault en conditions réelles)
+    mariadb_role_root_user: "root"
+    mariadb_role_root_password: ""           # si mot de passe root, le mettre ici ou dans Vault
+    mariadb_role_root_login_host: "localhost"
+    mariadb_role_root_login_unix_socket: "/var/run/mysqld/mysqld.sock"
+
+    # Création d'une base
+    mariadb_role_databases:
+      - name: "appdb"
+        encoding: "utf8mb4"
+        collation: "utf8mb4_unicode_ci"
+
+    # Création d'un utilisateur "all_granted"
+    mariadb_role_users:
+      - name: "appuser"
+        password: "SuperMotDePasse!"
+        host: "%"
+        priv: "appdb.*:ALL,GRANT"
+        state: "present"
+
+    # Création d'une table dans appdb
+    mariadb_role_tables:
+      - db: "appdb"
+        name: "users"
+        schema_sql: |
+          CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            email VARCHAR(100) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        state: "present"
+
+  roles:
+    - role: mariadb_role
+##################################################################################
+    A. Juste installer MariaDB et le laisser en local
+YAML
+vars:
+  mariadb_role_manage: true
+  mariadb_role_install_server: true
+  mariadb_role_bind_address: ""      # rien → pas de modification du bind
+  mariadb_role_databases: []
+  mariadb_role_users: []
+  mariadb_role_tables: []
+  ##################################################################################
+B. Juste créer un utilisateur ALL PRIV sur toutes les bases, sans toucher au bind
+YAML
+vars:
+  mariadb_role_databases: []
+  mariadb_role_tables: []
+  mariadb_role_bind_address: ""
+
+  mariadb_role_users:
+    - name: "all_admin"
+      password: "MegaSecret!"
+      host: "%"
+      priv: "*.*:ALL,GRANT"
+##################################################################################
+C. Juste créer des tables (DB déjà existante)
+YAML
+vars:
+  mariadb_role_databases: []
+  mariadb_role_users: []
+
+  mariadb_role_tables:
+    - db: "appdb"
+      name: "logs"
+      schema_sql: |
+        CREATE TABLE IF NOT EXISTS logs (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          message TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

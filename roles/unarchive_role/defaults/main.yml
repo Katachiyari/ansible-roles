@@ -1,0 +1,20 @@
+---
+# Activer ou non la gestion des archives
+unarchive_role_manage: true
+
+# Liste des opérations d'extraction
+# Chaque item peut contenir :
+# - src           (obligatoire) : chemin de l'archive
+# - dest          (obligatoire) : répertoire de destination
+# - remote_src    (optionnel)   : bool, true si l'archive est déjà sur la machine distante
+# - owner         (optionnel)
+# - group         (optionnel)
+# - mode          (optionnel)
+# - creates       (optionnel)   : chemin ; si présent, l'extraction est ignorée si ce chemin existe
+# - extra_opts    (optionnel)   : liste d'options pour la commande d'extraction (tar, unzip, etc.)
+# - include       (optionnel)   : liste de fichiers à inclure
+# - exclude       (optionnel)   : liste de fichiers à exclure
+# - keep_newer    (optionnel)   : bool
+# - list_files    (optionnel)   : bool, liste des fichiers extraits dans le registre
+# - validate_certs (optionnel)  : bool, pour HTTPS distant
+unarchive_role_items: []

@@ -1,0 +1,12 @@
+---
+# Variables par défaut pour le rôle file_role
+
+# Liste d'objets décrivant des fichiers, répertoires, liens, etc.
+# Chaque item peut contenir :
+# - path (obligatoire) : chemin du fichier / répertoire / lien
+# - state (optionnel) : file, directory, link, touch, absent (par défaut: file)
+# - owner, group, mode (optionnels)
+# - src (optionnel, pour les liens symboliques)
+# - recurse (optionnel, pour appliquer owner/group/mode récursivement sur un dossier)
+
+file_role_items: []

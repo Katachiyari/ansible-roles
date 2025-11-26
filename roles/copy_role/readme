@@ -1,0 +1,1 @@
+The copy module allows you to copy a file from the Ansible control node to the target hosts. In addition to copying the file, it allows you to set ownership, permissions, and SELinux labels to the destination file. Here's an example of using the copy module to copy a "message of the day" configuration file to the target hosts

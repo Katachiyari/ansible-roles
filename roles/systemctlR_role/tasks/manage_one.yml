@@ -1,0 +1,30 @@
+---
+# manage_one.yml
+# Gérer un seul service défini dans system_item
+
+# 1. Optionnel : daemon-reload avant ce service
+- name: Faire un daemon-reload avant de gérer le service {{ system_item.name }}
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - system_item.daemon_reload | default(false)
+  tags: [systemctlR, daemon_reload]
+
+# 2. Gérer le masquage éventuel (mask/unmask)
+- name: Gérer le masquage du service {{ system_item.name }}
+  ansible.builtin.systemd:
+    name: "{{ system_item.name }}"
+    masked: "{{ system_item.masked }}"
+  when:
+    - system_item.masked is defined
+  tags: [systemctlR, mask]
+
+# 3. Gérer l'état du service (start/stop/restart/reload)
+- name: Gérer l'état du service {{ system_item.name }}
+  ansible.builtin.systemd:
+    name: "{{ system_item.name }}"
+    state: "{{ system_item.state | default(omit) }}"
+    enabled: "{{ system_item.enabled | default(omit) }}"
+  when:
+    - system_item.state is defined or system_item.enabled is defined
+  tags: [systemctlR, state]

@@ -1,0 +1,7 @@
+- name: Ensure MOTD file is in place
+  copy:
+    src: files/motd
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: 0644

@@ -1,0 +1,17 @@
+---
+# Activer ou non la gestion des dépôts git par ce rôle
+git_clone_role_manage: true
+
+# Liste de dépôts à cloner/met à jour
+# Chaque item peut contenir :
+# - repo (obligatoire) : URL du dépôt Git (ssh://, https://, git@...)
+# - dest (obligatoire) : chemin où cloner le dépôt
+# - version (optionnel) : branche/tag/commit (par défaut 'HEAD' = branche par défaut)
+# - accept_hostkey (optionnel, bool, par défaut false)
+# - force (optionnel, bool, par défaut false)
+# - update (optionnel, bool, par défaut true)
+# - clone (optionnel, bool, par défaut true)
+# - key_file (optionnel) : chemin d'une clé privée à utiliser
+# - bare (optionnel, bool) : dépôt bare ou non
+# - depth (optionnel, int) : profondeur de clone (shallow)
+git_clone_role_repos: []

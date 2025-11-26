@@ -1,0 +1,79 @@
+---
+- name: Déploiement PostgreSQL complet (bind 0.0.0.0, user, DB, table)
+  hosts: dbservers
+  become: true
+
+  vars:
+    postgresql_role_manage: true
+    postgresql_role_install_server: true
+    postgresql_role_ensure_running: true
+
+    # Version à adapter selon ce que tu veux (ex: 14, 15, 16)
+    postgresql_role_version: "14"
+
+    # Écoute sur toutes les interfaces
+    postgresql_role_listen_addresses: "0.0.0.0"
+    postgresql_role_port: 5432
+
+    # Paramètres superuser (en test, souvent postgres sans mot de passe en local)
+    postgresql_role_superuser: "postgres"
+    postgresql_role_superuser_password: ""
+    postgresql_role_superuser_host: "localhost"
+
+    # Base à créer
+    postgresql_role_databases:
+      - name: "appdb"
+        owner: "postgres"
+        encoding: "UTF8"
+
+    # Utilisateur applicatif avec tous les droits sur appdb
+    postgresql_role_users:
+      - name: "appuser"
+        password: "SuperPassword!"
+        db: "appdb"
+        role_attr_flags: "LOGIN"
+        state: "present"
+
+    # Table à créer dans appdb
+    postgresql_role_tables:
+      - db: "appdb"
+        name: "users"
+        schema_sql: |
+          CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            email VARCHAR(100) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        state: "present"
+
+  roles:
+    - role: postgresql_role
+
+##################################################################################
+Juste installer PostgreSQL local (pas de DB, pas d’user, pas de bind 0.0.0.0) :
+YAML
+vars:
+  postgresql_role_manage: true
+  postgresql_role_install_server: true
+  postgresql_role_listen_addresses: ""
+  postgresql_role_databases: []
+  postgresql_role_users: []
+  postgresql_role_tables: []
+Juste créer un utilisateur et une DB sans toucher à la conf réseau :
+YAML
+vars:
+  postgresql_role_listen_addresses: ""
+
+  postgresql_role_databases:
+    - name: "mydb"
+
+  postgresql_role_users:
+    - name: "myuser"
+      password: "Secret!"
+      db: "mydb"
+Désactiver complètement le rôle dans un environnement :
+YAML
+vars:
+  postgresql_role_manage: false
+Le rôle affiche juste un message, aucune modification.

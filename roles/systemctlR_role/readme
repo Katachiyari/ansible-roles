@@ -1,0 +1,65 @@
+---
+- name: Exemple avancé d'utilisation de systemctlR_role
+  hosts: all
+  become: true
+
+  vars:
+    systemctlR_role_manage: true
+
+    # Faire un daemon-reload global avant tout (par ex. après avoir déployé des unit files)
+    systemctlR_role_global_daemon_reload: true
+
+    systemctlR_role_services:
+      # 1. Redémarrer nginx et l'activer au boot
+      - name: nginx
+        state: restarted
+        enabled: true
+
+      # 2. Recharger apache2 (sans restart complet)
+      - name: apache2
+        state: reloaded
+
+      # 3. Démarrer MariaDB, l'activer au boot et faire un daemon-reload avant
+      - name: mariadb
+        state: started
+        enabled: true
+        daemon_reload: true
+
+      # 4. Stopper et mask un service (ex: telnet)
+      - name: telnet.socket
+        state: stopped
+        masked: true
+
+  roles:
+    - role: systemctlR_role
+
+######################################################################################
+A. Redémarrer seulement un service après déploiement
+YAML
+vars:
+  systemctlR_role_services:
+    - name: apache2
+      state: restarted
+######################################################################################
+B. Faire un daemon-reload + enable + start pour un service custom
+YAML
+vars:
+  systemctlR_role_global_daemon_reload: true
+  systemctlR_role_services:
+    - name: myapp.service
+      state: started
+      enabled: true
+######################################################################################
+C. Masquer un service pour l’empêcher d’être lancé
+YAML
+vars:
+  systemctlR_role_services:
+    - name: telnet.service
+      state: stopped
+      masked: true
+######################################################################################
+D. Rôle présent mais désactivé dans un environnement
+YAML
+vars:
+  systemctlR_role_manage: false
+Le rôle affiche simplement un message et ne touche à rien.

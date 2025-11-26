@@ -1,0 +1,35 @@
+---
+# Rôle : template_role
+# Objectif : déployer des templates Jinja2 de manière dynamique
+
+- name: Ne rien faire si template_role_manage est à false
+  ansible.builtin.debug:
+    msg: "template_role_manage est à false : aucun template déployé."
+  when: not template_role_manage
+  tags: [template_role, templates]
+
+- name: Aucun template à déployer
+  ansible.builtin.debug:
+    msg: "template_role_items est vide : aucun template à gérer."
+  when:
+    - template_role_manage
+    - template_role_items | length == 0
+  tags: [template_role, templates]
+
+- name: Déployer les templates définis dans template_role_items
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default(omit) }}"
+    group: "{{ item.group | default(omit) }}"
+    mode: "{{ item.mode  | default(omit) }}"
+    backup: "{{ item.backup | default(false) }}"
+    force: "{{ item.force | default(omit) }}"
+    validate: "{{ item.validate | default(omit) }}"
+  loop: "{{ template_role_items }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  when:
+    - template_role_manage
+    - template_role_items | length > 0
+  tags: [template_role, templates]

@@ -1,0 +1,1 @@
+Ceci est un fichier statique déployé par le rôle copy_dynamic.

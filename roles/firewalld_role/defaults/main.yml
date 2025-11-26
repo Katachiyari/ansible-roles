@@ -1,0 +1,18 @@
+---
+# Activer ou non la gestion de firewalld par ce rôle
+firewalld_role_manage: true
+
+# S'assurer que firewalld est installé et démarré
+firewalld_role_install: true
+firewalld_role_ensure_running: true
+
+# Liste de règles firewalld à appliquer
+# Chaque item peut contenir :
+# - zone (optionnel, par défaut 'public')
+# - service (optionnel, ex: http, https, ssh)
+# - port (optionnel, ex: 80/tcp)
+# - rich_rule (optionnel, pour les règles avancées)
+# - state (optional, 'enabled' ou 'disabled', par défaut 'enabled')
+# - permanent (booléen, par défaut true)
+# - immediate (booléen, par défaut true)
+firewalld_role_rules: []

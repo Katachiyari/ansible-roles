@@ -1,0 +1,13 @@
+<VirtualHost *:{{ item.listen | default(apache_listen_port) }}>
+    ServerName {{ item.server_name }}
+    DocumentRoot {{ item.document_root }}
+
+    <Directory {{ item.document_root }}>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ item.server_name }}_error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ item.server_name }}_access.log combined
+</VirtualHost>

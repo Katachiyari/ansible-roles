@@ -1,0 +1,22 @@
+---
+# Activer ou non la gestion des utilisateurs
+user_role_manage: true
+
+# Liste d'utilisateurs à gérer
+# Chaque item peut contenir :
+# - name            (obligatoire) : nom de l'utilisateur
+# - state           (optionnel)   : present / absent (par défaut present)
+# - uid             (optionnel)
+# - gid             (optionnel)
+# - group           (optionnel)   : groupe principal
+# - groups          (optionnel)   : liste ou chaîne de groupes secondaires
+# - append          (optionnel)   : bool, ajouter aux groupes secondaires sans les remplacer
+# - shell           (optionnel)
+# - home            (optionnel)
+# - create_home     (optionnel)   : bool
+# - password        (optionnel)   : hash du mot de passe (jamais en clair en prod)
+# - system          (optionnel)   : bool, utilisateur système
+# - remove          (optionnel)   : bool, si state=absent → supprime le home ou pas
+# - ssh_authorized_keys (optionnel) : liste de clés SSH à mettre dans ~/.ssh/authorized_keys
+# - sudo            (optionnel)   : chaîne pour une ligne sudoers (ex: "%admin ALL=(ALL) NOPASSWD:ALL")
+user_role_users: []

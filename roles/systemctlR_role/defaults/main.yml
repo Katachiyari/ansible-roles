@@ -1,0 +1,15 @@
+---
+# Activer ou non la gestion des services via ce rôle
+systemctlR_role_manage: true
+
+# Effectuer un 'systemctl daemon-reload' global avant les actions ? (optionnel)
+systemctlR_role_global_daemon_reload: false
+
+# Liste des services à gérer
+# Chaque item peut contenir :
+# - name (obligatoire) : nom de l'unité systemd (ex: nginx, apache2, mariadb, postgresql.service, etc.)
+# - state (optionnel) : started, stopped, restarted, reloaded
+# - enabled (optionnel) : true/false (activation au boot)
+# - daemon_reload (optionnel) : true/false -> si true, faire un daemon-reload avant ce service
+# - masked (optionnel) : true/false (mask/unmask le service)
+systemctlR_role_services: []

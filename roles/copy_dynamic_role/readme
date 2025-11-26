@@ -1,0 +1,23 @@
+# Playbook d'exemple pour utiliser le rôle copy_dynamic_role
+- hosts: all
+  become: true
+
+  vars:
+    env: "dev"
+
+  roles:
+    - role: copy_dynamic
+      vars:
+        copy_dynamic_items:
+          - src: "motd.j2"
+            dest: "/etc/motd"
+            template: true
+            owner: "root"
+            group: "root"
+            mode: "0644"
+          - src: "static_file.txt"
+            dest: "/tmp/static_file.txt"
+            template: false
+            owner: "root"
+            group: "root"
+            mode: "0644"

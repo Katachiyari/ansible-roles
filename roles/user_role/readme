@@ -1,0 +1,67 @@
+---
+- name: Exemple avancé d'utilisation de user_role
+  hosts: all
+  become: true
+
+  vars:
+    user_role_manage: true
+
+    user_role_users:
+      # 1. Utilisateur applicatif simple
+      - name: "appuser"
+        shell: "/bin/bash"
+        create_home: true
+        groups: "www-data"
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAA... commentaire-appuser"
+        sudo: "appuser ALL=(ALL) NOPASSWD:ALL"
+
+      # 2. Utilisateur admin avec plusieurs groupes et plusieurs clés SSH
+      - name: "admin"
+        shell: "/bin/bash"
+        create_home: true
+        groups:
+          - "sudo"
+          - "adm"
+        append: true
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAA... admin-key-1"
+          - "ssh-ed25519 AAAA... admin-key-2"
+        sudo: "admin ALL=(ALL) NOPASSWD:ALL"
+
+      # 3. Supprimer un ancien utilisateur et son home
+      - name: "olduser"
+        state: "absent"
+        remove: true
+
+  roles:
+    - role: user_role
+######################################################################################
+A. Juste créer 1 ou 2 comptes, sans SSH ni sudo
+YAML
+vars:
+  user_role_users:
+    - name: "etudiant"
+      shell: "/bin/bash"
+      create_home: true
+
+roles:
+  - role: user_role
+#######################################################################################
+B. Rôle présent mais désactivé
+YAML
+vars:
+  user_role_manage: false
+Le rôle ne fait rien.
+######################################################################################
+C. Gérer uniquement les clés SSH d’utilisateurs existants
+Tu peux définir :
+
+YAML
+vars:
+  user_role_users:
+    - name: "deploy"
+      ssh_authorized_keys:
+        - "ssh-rsa AAAA ... deploy"
+Si deploy existe déjà : il sera “touché” par la tâche user mais sans changement majeur.
+Les clés SSH seront gérées.

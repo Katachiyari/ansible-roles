@@ -1,0 +1,171 @@
+---
+# Rôle : postgresql_role
+# Objectif : installation, config (listen 0.0.0.0), users, bases, tables
+
+- name: Ne rien faire si postgresql_role_manage est à false
+  ansible.builtin.debug:
+    msg: "postgresql_role_manage est à false : aucune action PostgreSQL exécutée."
+  when: not postgresql_role_manage
+  tags: [postgresql]
+
+############################################################
+# 1. Installation du serveur PostgreSQL
+############################################################
+
+- name: Installer PostgreSQL (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - "postgresql{{ '-' + postgresql_role_version if postgresql_role_version | length > 0 else '' }}"
+      - "postgresql-client{{ '-' + postgresql_role_version if postgresql_role_version | length > 0 else '' }}"
+      - "python3-psycopg2"
+    state: present
+    update_cache: true
+  when:
+    - postgresql_role_manage
+    - postgresql_role_install_server
+    - ansible_os_family == "Debian"
+  tags: [postgresql, install]
+
+# (Tu pourras ajouter la partie RedHat plus tard avec les bons paquets)
+
+############################################################
+# 2. Configuration listen_addresses + port
+############################################################
+
+- name: Déployer postgresql.conf custom (listen_addresses / port)
+  ansible.builtin.template:
+    src: "postgresql.conf.j2"
+    dest: "{{ postgresql_role_config_file }}"
+    owner: postgres
+    group: postgres
+    mode: "0644"
+  when:
+    - postgresql_role_manage
+    - postgresql_role_install_server
+    - postgresql_role_listen_addresses | length > 0
+  notify: Restart PostgreSQL
+  tags: [postgresql, config]
+
+- name: Déployer pg_hba.conf custom
+  ansible.builtin.template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_role_hba_file }}"
+    owner: postgres
+    group: postgres
+    mode: "0600"
+  when:
+    - postgresql_role_manage
+    - postgresql_role_install_server
+    - postgresql_role_listen_addresses | length > 0
+  notify: Restart PostgreSQL
+  tags: [postgresql, config]
+
+############################################################
+# 3. S'assurer que le service est démarré
+############################################################
+
+- name: S'assurer que PostgreSQL est démarré et activé
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+  when:
+    - postgresql_role_manage
+    - postgresql_role_ensure_running
+  tags: [postgresql, service]
+
+############################################################
+# 4. Création des bases de données
+############################################################
+
+- name: Aucune base de données à gérer
+  ansible.builtin.debug:
+    msg: "postgresql_role_databases est vide : aucune base à créer/supprimer."
+  when:
+    - postgresql_role_manage
+    - postgresql_role_databases | length == 0
+  tags: [postgresql, db]
+
+- name: Gérer les bases de données PostgreSQL
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    owner: "{{ item.owner | default(omit) }}"
+    encoding: "{{ item.encoding | default(omit) }}"
+    lc_collate: "{{ item.lc_collate | default(omit) }}"
+    lc_ctype: "{{ item.lc_ctype | default(omit) }}"
+    template: "{{ item.template | default(omit) }}"
+    login_user: "{{ postgresql_role_superuser }}"
+    login_password: "{{ postgresql_role_superuser_password | default(omit) }}"
+    login_host: "{{ postgresql_role_superuser_host | default(omit) }}"
+    login_unix_socket: "{{ postgresql_role_login_unix_socket | default(omit) }}"
+    port: "{{ postgresql_role_login_port }}"
+  loop: "{{ postgresql_role_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - postgresql_role_manage
+    - postgresql_role_databases | length > 0
+  tags: [postgresql, db]
+
+############################################################
+# 5. Création des utilisateurs
+############################################################
+
+- name: Aucun utilisateur PostgreSQL à gérer
+  ansible.builtin.debug:
+    msg: "postgresql_role_users est vide : aucun utilisateur à créer/supprimer."
+  when:
+    - postgresql_role_manage
+    - postgresql_role_users | length == 0
+  tags: [postgresql, users]
+
+- name: Gérer les utilisateurs PostgreSQL
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | default(omit) }}"
+    db: "{{ item.db | default(omit) }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    login_user: "{{ postgresql_role_superuser }}"
+    login_password: "{{ postgresql_role_superuser_password | default(omit) }}"
+    login_host: "{{ postgresql_role_superuser_host | default(omit) }}"
+    login_unix_socket: "{{ postgresql_role_login_unix_socket | default(omit) }}"
+    port: "{{ postgresql_role_login_port }}"
+  loop: "{{ postgresql_role_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - postgresql_role_manage
+    - postgresql_role_users | length > 0
+  tags: [postgresql, users]
+
+############################################################
+# 6. Création des tables via SQL
+############################################################
+
+- name: Aucune table PostgreSQL à gérer
+  ansible.builtin.debug:
+    msg: "postgresql_role_tables est vide : aucune table à créer."
+  when:
+    - postgresql_role_manage
+    - postgresql_role_tables | length == 0
+  tags: [postgresql, tables]
+
+- name: Gérer les tables PostgreSQL (SQL brut)
+  community.postgresql.postgresql_query:
+    db: "{{ item.db }}"
+    query: "{{ item.schema_sql }}"
+    login_user: "{{ postgresql_role_superuser }}"
+    login_password: "{{ postgresql_role_superuser_password | default(omit) }}"
+    login_host: "{{ postgresql_role_superuser_host | default(omit) }}"
+    login_unix_socket: "{{ postgresql_role_login_unix_socket | default(omit) }}"
+    port: "{{ postgresql_role_login_port }}"
+  loop: "{{ postgresql_role_tables }}"
+  loop_control:
+    label: "{{ item.db }}.{{ item.name }}"
+  when:
+    - postgresql_role_manage
+    - postgresql_role_tables | length > 0
+    - item.state | default('present') == 'present'
+  tags: [postgresql, tables]
