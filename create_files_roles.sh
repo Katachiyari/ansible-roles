@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Ansible role skeleton generator
+# Ansible role skeleton generator (Full Structure)
 
-# Verify execution from project root (roles directory must exist)
+# Verify execution from project root
 if [ ! -d "roles" ]; then
-  echo "Erreur : le dossier 'roles' n'existe pas. Lancez ce script depuis la racine du projet."
+  echo "Erreur : Dossier 'roles' introuvable. Exécutez depuis la racine du projet."
   exit 1
 fi
 
@@ -13,21 +13,23 @@ read -rp "Nom du rôle : " name_role
 
 # Validate role name
 if [ -z "$name_role" ]; then
-  echo "Erreur : le nom du rôle est requis."
+  echo "Erreur : Nom du rôle requis."
   exit 1
 fi
-
-# Confirm creation
-echo "Création du rôle : $name_role"
 
 # Check for existing role
 if [ -d "roles/$name_role" ]; then
-  echo "Erreur : le rôle 'roles/$name_role' existe déjà."
+  echo "Erreur : Le rôle 'roles/$name_role' existe déjà."
   exit 1
 fi
 
-# Create directory structure
+echo "Création du rôle complet : $name_role"
+
+# Create standard directories
 mkdir -p "roles/$name_role"/{defaults,files,handlers,meta,tasks,templates,tests,vars}
+
+# Create advanced plugin directories (Python extensions)
+mkdir -p "roles/$name_role"/{library,module_utils,lookup_plugins,filter_plugins,action_plugins}
 
 # Create base YAML files
 touch "roles/$name_role/defaults/main.yml"
@@ -41,4 +43,11 @@ touch "roles/$name_role/tests/inventory"
 touch "roles/$name_role/tests/test.yml"
 touch "roles/$name_role/README.md"
 
-echo "Rôle '$name_role' créé avec succès dans roles/$name_role"
+# Create .gitkeep for advanced folders to ensure git tracks them even if empty
+touch "roles/$name_role/library/.gitkeep"
+touch "roles/$name_role/module_utils/.gitkeep"
+touch "roles/$name_role/lookup_plugins/.gitkeep"
+touch "roles/$name_role/filter_plugins/.gitkeep"
+touch "roles/$name_role/action_plugins/.gitkeep"
+
+echo "Rôle '$name_role' créé avec structure étendue dans roles/$name_role"
