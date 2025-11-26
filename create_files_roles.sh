@@ -1,41 +1,44 @@
 #!/bin/bash
 
-# Script de création d'un squelette de rôle Ansible
-# Utilisation : lancer depuis la racine du repo (là où se trouve le dossier "roles")
+# Ansible role skeleton generator
 
-# Vérifier qu'on est bien à la racine (dossier roles présent)
+# Verify execution from project root (roles directory must exist)
 if [ ! -d "roles" ]; then
-  echo "Erreur : le dossier 'roles' n'existe pas dans le répertoire courant."
-  echo "Place-toi à la racine de ton projet Ansible (là où il y a le dossier 'roles')."
+  echo "Erreur : le dossier 'roles' n'existe pas. Lancez ce script depuis la racine du projet."
   exit 1
 fi
 
-# Demander le nom du rôle
+# Input role name
 read -rp "Nom du rôle : " name_role
 
-# Vérifier que le nom n'est pas vide
+# Validate role name
 if [ -z "$name_role" ]; then
-  echo "Erreur : le nom du rôle ne peut pas être vide."
+  echo "Erreur : le nom du rôle est requis."
   exit 1
 fi
 
-# Afficher le nom du rôle
+# Confirm creation
 echo "Création du rôle : $name_role"
 
-# Vérifier si le rôle existe déjà
+# Check for existing role
 if [ -d "roles/$name_role" ]; then
   echo "Erreur : le rôle 'roles/$name_role' existe déjà."
   exit 1
 fi
 
-# Créer l'arborescence du rôle
-mkdir -p "roles/$name_role"/{tasks,defaults,handlers,vars,templates,files,meta}
+# Create directory structure
+mkdir -p "roles/$name_role"/{defaults,files,handlers,meta,tasks,templates,tests,vars}
 
-# Créer les fichiers main.yml de base
-touch "roles/$name_role/tasks/main.yml"
+# Create base YAML files
 touch "roles/$name_role/defaults/main.yml"
 touch "roles/$name_role/handlers/main.yml"
-touch "roles/$name_role/vars/main.yml"
 touch "roles/$name_role/meta/main.yml"
+touch "roles/$name_role/tasks/main.yml"
+touch "roles/$name_role/vars/main.yml"
 
-echo "Rôle '$name_role' créé dans roles/$name_role"
+# Create test files and documentation
+touch "roles/$name_role/tests/inventory"
+touch "roles/$name_role/tests/test.yml"
+touch "roles/$name_role/README.md"
+
+echo "Rôle '$name_role' créé avec succès dans roles/$name_role"
