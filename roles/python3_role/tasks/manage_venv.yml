@@ -1,0 +1,47 @@
+---
+# manage_venv.yml
+# Gérer un seul virtualenv, défini par venv_item
+
+- name: S'assurer que le package python3-venv / virtualenv est présent (optionnel)
+  ansible.builtin.debug:
+    msg: "Assure-toi que les paquets pour créer des virtualenvs sont installés (python3-venv / virtualenv)"
+  when: false  # juste un rappel ; la vraie install est gérée côté paquets système
+  tags: [python3_role, python3, venv]
+
+# 1. Créer ou mettre à jour le virtualenv si state=present (défaut)
+- name: Créer/mettre à jour le virtualenv {{ venv_item.path }}
+  ansible.builtin.pip:
+    virtualenv: "{{ venv_item.path }}"
+    virtualenv_python: "{{ venv_item.python | default('python3') }}"
+    state: present
+    name: ""
+  when:
+    - venv_item.state | default('present') == 'present'
+  tags: [python3_role, python3, venv]
+
+# 2. Installer des paquets dans ce virtualenv (si définis)
+- name: Installer des paquets dans le virtualenv {{ venv_item.path }}
+  ansible.builtin.pip:
+    virtualenv: "{{ venv_item.path }}"
+    virtualenv_python: "{{ venv_item.python | default('python3') }}"
+    name: "{{ pkg.name }}"
+    state: "{{ pkg.state | default('present') }}"
+    version: "{{ pkg.version | default(omit) }}"
+    extra_args: "{{ pkg.extra_args | default(omit) }}"
+  loop: "{{ venv_item.packages | default([]) }}"
+  loop_control:
+    loop_var: pkg
+    label: "{{ pkg.name }}"
+  when:
+    - venv_item.state | default('present') == 'present'
+    - (venv_item.packages | default([])) | length > 0
+  tags: [python3_role, python3, venv]
+
+# 3. Supprimer le virtualenv si state=absent
+- name: Supprimer le virtualenv {{ venv_item.path }}
+  ansible.builtin.file:
+    path: "{{ venv_item.path }}"
+    state: absent
+  when:
+    - venv_item.state | default('present') == 'absent'
+  tags: [python3_role, python3, venv]

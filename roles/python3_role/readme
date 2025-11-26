@@ -1,0 +1,75 @@
+---
+- name: Exemple avancé d'utilisation de python3_role
+  hosts: all
+  become: true
+
+  vars:
+    python3_role_manage: true
+    python3_role_install_python: true
+    python3_role_install_pip: true
+
+    # Paquets Python globaux
+    python3_role_global_packages:
+      - name: "pip"
+        state: latest
+      - name: "setuptools"
+        state: latest
+      - name: "wheel"
+        state: latest
+      - name: "ansible-lint"
+        state: present
+        extra_args: "--no-cache-dir"
+
+    # Virtualenvs à gérer
+    python3_role_virtualenvs:
+      # 1. Venv pour une appli web
+      - path: "/opt/venv/webapp"
+        python: "/usr/bin/python3"
+        state: "present"
+        packages:
+          - name: "Django"
+            version: "4.2.*"
+          - name: "gunicorn"
+          - name: "psycopg2-binary"
+
+      # 2. Venv pour outils d'admin
+      - path: "/opt/venv/tools"
+        state: "present"
+        packages:
+          - name: "httpie"
+          - name: "requests"
+
+      # 3. Exemple de suppression de venv obsolète
+      - path: "/opt/venv/oldapp"
+        state: "absent"
+
+  roles:
+    - role: python3_role
+##############################
+A. Juste installer Python 3 (sans pip, sans paquets, sans venv)
+YAML
+vars:
+  python3_role_install_python: true
+  python3_role_install_pip: false
+  python3_role_global_packages: []
+  python3_role_virtualenvs: []
+
+##############################
+B. Machine déjà avec Python 3, tu veux juste gérer des venvs
+YAML
+vars:
+  python3_role_install_python: false
+  python3_role_install_pip: true
+  python3_role_global_packages: []
+  python3_role_virtualenvs:
+    - path: "/srv/app/venv"
+      packages:
+        - name: "fastapi"
+        - name: "uvicorn"
+
+##############################
+C. Désactiver complètement le rôle dans un environnement
+YAML
+vars:
+  python3_role_manage: false
+Le rôle ne fait que logguer un message, aucune modification.

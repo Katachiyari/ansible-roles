@@ -1,0 +1,10 @@
+# Fichier généré par Ansible (timesync_role) pour chrony
+
+{% for srv in timesync_role_ntp_servers %}
+server {{ srv }} iburst
+{% endfor %}
+
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony

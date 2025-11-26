@@ -1,0 +1,40 @@
+---
+- name: Exemple avancé d'utilisation de sys_upgrade_role
+  hosts: all
+  become: true
+
+  vars:
+    sys_upgrade_role_manage: true
+
+    # Debian/Ubuntu : faire un full upgrade + reboot si nécessaire
+    sys_upgrade_role_update_cache: true
+    sys_upgrade_role_upgrade_type: "full"
+    sys_upgrade_role_auto_reboot: true
+    sys_upgrade_role_reboot_timeout: 900
+    sys_upgrade_role_reboot_msg: "Reboot après full-upgrade via sys_upgrade_role."
+
+    # RedHat/Suse : laisser les valeurs par défaut (full upgrade activé)
+    sys_upgrade_role_full_upgrade_redhat: true
+    sys_upgrade_role_full_upgrade_suse: true
+
+  roles:
+    - role: sys_upgrade_role
+
+############################################################
+A. Juste update du cache, pas d’upgrade des paquets
+YAML
+vars:
+  sys_upgrade_role_update_cache: true
+  sys_upgrade_role_upgrade_type: "none"
+  sys_upgrade_role_auto_reboot: false
+############################################################
+B. Upgrade “safe” sans reboot automatique
+YAML
+vars:
+  sys_upgrade_role_upgrade_type: "safe"
+  sys_upgrade_role_auto_reboot: false
+############################################################
+C. Rôle présent mais désactivé
+YAML
+vars:
+  sys_upgrade_role_manage: false

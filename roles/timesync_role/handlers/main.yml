@@ -1,0 +1,15 @@
+---
+- name: Restart chrony
+  ansible.builtin.service:
+    name: "{{ timesync_role_chrony_service }}"
+    state: restarted
+
+- name: Restart systemd-timesyncd
+  ansible.builtin.service:
+    name: "{{ timesync_role_timesyncd_service }}"
+    state: restarted
+
+- name: Restart ntp
+  ansible.builtin.service:
+    name: "{{ timesync_role_ntp_service }}"
+    state: restarted
