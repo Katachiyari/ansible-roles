@@ -1,0 +1,51 @@
+---
+# Update apt cache and install packages
+- name: Install Apache2 and PHP dependencies
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop: "{{ web_packages }}"
+  notify: Restart apache
+
+# Create document root
+- name: Ensure document root directory exists
+  ansible.builtin.file:
+    path: "{{ web_doc_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+# Deploy Vhost configuration
+- name: Configure Apache VirtualHost
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "/etc/apache2/sites-available/{{ web_domain }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload apache
+
+# Enable the site (symlink creation logic via command wrapper)
+- name: Enable VirtualHost site
+  ansible.builtin.command:
+    cmd: "a2ensite {{ web_domain }}.conf"
+    creates: "/etc/apache2/sites-enabled/{{ web_domain }}.conf"
+  notify: Reload apache
+
+# Deploy test file
+- name: Deploy PHP test page
+  ansible.builtin.template:
+    src: index.php.j2
+    dest: "{{ web_doc_root }}/index.php"
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+# Service management
+- name: Ensure Apache service is running
+  ansible.builtin.service:
+    name: "{{ web_service }}"
+    state: "{{ web_service_state }}"
+    enabled: "{{ web_service_enabled }}"

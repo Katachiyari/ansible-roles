@@ -1,0 +1,12 @@
+---
+# Handler for full restart
+- name: Restart apache
+  ansible.builtin.service:
+    name: "{{ web_service }}"
+    state: restarted
+
+# Handler for config reload (zero downtime)
+- name: Reload apache
+  ansible.builtin.service:
+    name: "{{ web_service }}"
+    state: reloaded

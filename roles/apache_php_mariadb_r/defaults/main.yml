@@ -1,0 +1,18 @@
+---
+# System packages definition
+web_packages:
+  - apache2
+  - php
+  - php-mysql         # Connector for MariaDB interaction
+  - libapache2-mod-php
+
+# Service configuration
+web_service: apache2
+web_service_state: started
+web_service_enabled: true
+
+# Vhost configuration
+web_domain: "monsite.test"
+web_port: 80
+web_doc_root: "/var/www/html"
+web_admin_email: "webmaster@{{ web_domain }}"

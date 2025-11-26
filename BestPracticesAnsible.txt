@@ -1,0 +1,121 @@
+Best Practices Ansible (compatibles avec ansible-lint), à savoir :
+
+FQCN (Fully Qualified Collection Names) : Utilisation systématique de ansible.builtin.xxx au lieu des noms courts.
+
+Idempotence stricte : Les tâches ne doivent rien changer si l'état souhaité est déjà atteint.
+
+Pas de modules shell/command inutiles : Utilisation prioritaire des modules dédiés (apt, service, file). Si command est inévitable, utilisation obligatoire des arguments creates ou removes.
+
+Gestion des états : Utilisation exclusive des handlers pour les redémarrages de services.
+
+Sécurité et Permissions : Définition explicite des owner, group et mode lors de la création de fichiers ou dossiers.
+
+1. Système & Base (L'essentiel)
+    Ces rôles sont présents dans presque tous les playbooks de base ("common").
+
+    common : Installation des paquets de base (curl, vim, git, htop, etc.).
+
+    users : Gestion des utilisateurs, groupes et clés SSH.
+
+    sudo : Configuration des droits sudoers.
+
+    sshd : Sécurisation du service SSH (port, root login, password auth).
+
+    ntp / chrony : Synchronisation de l'horloge système.
+
+    timezone : Définition du fuseau horaire du serveur.
+
+    hostname : Configuration du nom de la machine et du fichier /etc/hosts.
+
+    firewall : Gestion générique (UFW sur Debian/Ubuntu, Firewalld sur RHEL/CentOS).
+
+    system_update : Mise à jour complète des paquets (apt/yum upgrade).
+
+    swap : Création et montage de fichier swap.
+
+    locale : Configuration des locales (langue système).
+
+    logrotate : Gestion de la rotation des logs.
+
+    cron : Gestion des tâches planifiées.
+
+2. Serveurs Web & Proxy
+    nginx : Installation et configuration (vhosts/server blocks).
+
+    apache (ou httpd) : Le serveur web classique.
+
+    haproxy : Load balancer et proxy TCP/HTTP.
+
+    traefik : Reverse proxy moderne (souvent utilisé avec Docker).
+
+    certbot : Gestion des certificats SSL Let's Encrypt.
+
+    varnish : Cache HTTP accelerator.
+
+3. Bases de Données & Cache
+    mysql : Serveur MySQL.
+
+    mariadb : Serveur MariaDB (souvent préféré à MySQL).
+
+    postgresql : Serveur PostgreSQL (très populaire en entreprise).
+
+    redis : Cache in-memory et courtier de messages.
+
+    mongodb : Base NoSQL orientée documents.
+
+    elasticsearch : Moteur de recherche et d'analyse.
+
+    memcached : Système de cache d'objets distribué.
+
+4. Langages & Runtimes
+    php : Installation de PHP et ses extensions (FPM).
+
+    nodejs : Installation de Node.js et npm/yarn.
+
+    java : Installation du JDK/JRE (OpenJDK ou Oracle).
+
+    python : Gestion des versions Python et pip.
+
+    golang : Environnement de développement Go.
+
+    ruby : Environnement Ruby (souvent via rbenv ou rvm).
+
+    5. Conteneurisation & Orchestration
+    docker : Installation du moteur Docker.
+
+    docker_compose : Installation de l'outil docker-compose.
+
+    kubernetes (ou k8s) : Bootstrapping de cluster (souvent via kubeadm).
+
+    k3s : Distribution Kubernetes légère (très populaire pour le Edge/IoT).
+
+    podman : Alternative à Docker (daemonless).
+
+6. Monitoring & Logging
+    prometheus : Serveur de monitoring et time-series DB.
+
+    node_exporter : Agent de métriques pour Prometheus.
+
+    grafana : Dashboard de visualisation.
+
+    filebeat : Agent de transfert de logs (stack ELK).
+
+    zabbix_agent : Agent pour le monitoring Zabbix.
+
+    datadog : Agent pour la plateforme Datadog.
+
+7. Sécurité & Réseau
+    fail2ban : Bannissement d'IPs après échecs d'authentification.
+
+    wireguard : VPN moderne et rapide.
+
+    openvpn : VPN classique.
+
+    selinux : Configuration ou désactivation (souvent désactivation...) de SELinux.
+
+8. CI/CD & Outils Dev
+    git : Configuration avancée de Git.
+
+    jenkins : Serveur d'automatisation CI/CD.
+
+    gitlab_runner : Agent d'exécution pour GitLab CI.
