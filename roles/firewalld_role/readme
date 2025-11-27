@@ -1,86 +1,15 @@
-# Exemple d'utilisation avancée de firewalld_role
 ---
-- name: Exemple avancé d'utilisation de firewalld_role
+- name: Déployer firewalld et configurer règles
   hosts: all
-  become: true
-
-  vars:
-    # On veut gérer firewalld
-    firewalld_role_manage: true
-    firewalld_role_install: true
-    firewalld_role_ensure_running: true
-
-    # Déclaration dynamique des règles (on n'est pas obligé d'utiliser tous les champs)
-    firewalld_role_rules:
-      # 1. Ouvrir le service SSH dans la zone public
-      - service: ssh
-        zone: public
-        state: enabled
-
-      # 2. Ouvrir le port HTTP 80/tcp
-      - port: "80/tcp"
-        zone: public
-        state: enabled
-
-      # 3. Ouvrir HTTPS 443/tcp, permanent false mais immediate true (exemple)
-      - port: "443/tcp"
-        zone: public
-        state: enabled
-        permanent: false
-        immediate: true
-
-      # 4. Ajouter une rich rule (optionnel, avancé)
-      - rich_rule: 'rule family="ipv4" source address="192.168.0.0/24" service name="mysql" accept'
-        zone: public
-        state: enabled
+  become: yes
 
   roles:
-    - role: firewalld_role
-
-    ######################################################################################
-    Exemple A : juste installer et démarrer firewalld, sans aucune règle
-YAML
-- hosts: all
-  become: true
-
-  vars:
-    firewalld_role_manage: true
-    firewalld_role_install: true
-    firewalld_role_ensure_running: true
-    firewalld_role_rules: []   # ou ne pas la définir
-
-  roles:
-    - role: firewalld_role
-Grâce à firewalld_role_rules | length == 0, le rôle ne gère aucune règle.
-######################################################################################
-Exemple B : ne PAS gérer firewalld du tout (mais garder le rôle dans le playbook)
-YAML
-- hosts: all
-  become: true
-
-  vars:
-    firewalld_role_manage: false
-
-  roles:
-    - role: firewalld_role
-Le rôle affiche juste un message et ne fait aucune modification.
-######################################################################################
-Exemple C : une seule règle simple avec un minimum de variables
-YAML
-- hosts: all
-  become: true
-
-  vars:
-    firewalld_role_rules:
-      - service: http   # zone = public par défaut, state = enabled par défaut
-
-  roles:
-    - role: firewalld_role
-Ici tu n’utilises :
-
-ni port,
-ni rich_rule,
-ni permanent,
-ni immediate,
-ni même zone (elle vaut public par défaut).
-Et ça marche, grâce aux default(...) dans le rôle.
+    - role: firewalld_manage
+      vars:
+        firewalld_ports:
+          - "80/tcp"
+          - "443/tcp"
+        firewalld_services:
+          - ssh
+        firewalld_zone: "public"
+        firewalld_enabled: true

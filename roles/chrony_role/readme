@@ -1,0 +1,16 @@
+---
+- name: Déployer et configurer chrony sur serveurs Debian
+  hosts: ntp_servers
+  become: yes
+
+  roles:
+    - role: chrony_manage
+      vars:
+        chrony_ntp_servers:
+          - ntp.example.org
+          - 0.pool.ntp.org
+          - time.google.com
+        chrony_extra_config: |
+          local stratum 10
+          # Permet l'accès client uniquement en local
+          allow 127.0.0.1

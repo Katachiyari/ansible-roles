@@ -1,0 +1,53 @@
+---
+- name: Installer ufw si demandé
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+  when: ufw_install
+  become: yes
+
+- name: Définir les politiques par défaut d’UFW
+  command: "ufw default {{ item.policy }} {{ item.direction }}"
+  with_items:
+    - { direction: "incoming", policy: "{{ ufw_default_input_policy }}" }
+    - { direction: "outgoing", policy: "{{ ufw_default_output_policy }}" }
+  become: yes
+
+- name: Autoriser les ports listés
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop: "{{ ufw_allow_ports }}"
+  when: ufw_allow_ports | length > 0
+  become: yes
+
+- name: Bloquer les ports listés
+  ufw:
+    rule: deny
+    port: "{{ item }}"
+  loop: "{{ ufw_deny_ports }}"
+  when: ufw_deny_ports | length > 0
+  become: yes
+
+- name: Autoriser les services listés
+  ufw:
+    rule: allow
+    name: "{{ item }}"
+  loop: "{{ ufw_allow_services }}"
+  when: ufw_allow_services | length > 0
+  become: yes
+
+- name: Bloquer les services listés
+  ufw:
+    rule: deny
+    name: "{{ item }}"
+  loop: "{{ ufw_deny_services }}"
+  when: ufw_deny_services | length > 0
+  become: yes
+
+- name: Activer ou désactiver ufw
+  command: "{{ 'ufw enable' if ufw_enabled else 'ufw disable' }}"
+  args:
+    warn: false
+  become: yes

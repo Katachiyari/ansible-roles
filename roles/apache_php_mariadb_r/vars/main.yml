@@ -1,0 +1,30 @@
+---
+# Variables par défaut du rôle apache_php_mariadb_r
+php_packages:
+  - php
+  - php-cli
+  - libapache2-mod-php
+  - php-common
+
+mariadb_packages:
+  - mariadb-server
+  - php-mysql
+
+postgres_packages:
+  - postgresql
+  - php-pgsql
+
+oracle_packages:
+  - php-pear
+  - php-dev
+  - php-oci8
+
+mysql_packages:
+  - mysql-server
+  - php-mysql
+
+# Flags d'activation des bases de données
+use_mariadb: false
+use_postgres: false
+use_oracle: false
+use_mysql: false

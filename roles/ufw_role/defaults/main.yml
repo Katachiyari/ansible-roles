@@ -1,0 +1,22 @@
+---
+# Installer le paquet ufw
+ufw_install: true
+
+# Activer ou désactiver ufw (true = actif)
+ufw_enabled: true
+
+# Actions par défaut (par exemple 'deny' ou 'allow') pour les inputs/outbound
+ufw_default_input_policy: "deny"
+ufw_default_output_policy: "allow"
+
+# Liste des ports à autoriser (exemple: "22", "80/tcp", "123/udp")
+ufw_allow_ports: []
+
+# Liste des ports à bloquer explicitement
+ufw_deny_ports: []
+
+# Liste des services ufw à autoriser (exemple: "ssh", "http")
+ufw_allow_services: []
+
+# Liste des services ufw à bloquer explicitement
+ufw_deny_services: []

@@ -1,7 +1,26 @@
-- name: Ensure MOTD file is in place
+---
+- name: Vérifier que les variables source et destination sont renseignées
+  fail:
+    msg: "Les variables 'copy_src' et 'copy_dest' doivent être renseignées."
+  when: copy_src == "" or copy_dest == ""
+
+- name: Copier le fichier avec module copy
   copy:
-    src: files/motd
-    dest: /etc/motd
-    owner: root
-    group: root
-    mode: 0644
+    src: "{{ copy_src }}"
+    dest: "{{ copy_dest }}"
+    owner: "{{ copy_owner }}"
+    group: "{{ copy_group }}"
+    mode: "{{ copy_mode }}"
+    force: "{{ copy_force }}"
+  become: yes
+  when: copy_template == false
+
+- name: Copier le fichier en mode template (avec rendu Jinja2)
+  template:
+    src: "{{ copy_src }}"
+    dest: "{{ copy_dest }}"
+    owner: "{{ copy_owner }}"
+    group: "{{ copy_group }}"
+    mode: "{{ copy_mode }}"
+  become: yes
+  when: copy_template == true

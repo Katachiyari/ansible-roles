@@ -1,0 +1,12 @@
+---
+# Mode SELinux désiré ("enforcing", "permissive", "disabled")
+selinux_mode: "enforcing"
+
+# Politique SELinux à appliquer (ex: "targeted", "mls")
+selinux_policy: "targeted"
+
+# Installer les paquets nécessaires SELinux (booléen)
+selinux_install_packages: true
+
+# Redémarrer la machine si la configuration nécessite un reboot (booléen)
+selinux_force_reboot: false

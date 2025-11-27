@@ -1,0 +1,29 @@
+---
+# Chemin du fichier cible à modifier (obligatoire)
+lineinfile_path: ""
+
+# Expression régulière de la ligne à rechercher (optionnel, mais conseillé)
+lineinfile_regexp: ""
+
+# Ligne à insérer ou remplacer (obligatoire)
+lineinfile_line: ""
+
+# Etat désiré : present (ajouter/modifier la ligne) ou absent (retirer la ligne)
+lineinfile_state: "present"
+
+# Insertion (optionnel) : before/after ou absent pour insertion normale
+lineinfile_insertafter: "EOF"
+
+lineinfile_insertbefore: ""
+
+# Ajout d’un commentaire avant/insertion (optionnel)
+lineinfile_backrefs: false
+
+# Propriétaire du fichier (optionnel)
+lineinfile_owner: "root"
+
+# Groupe du fichier (optionnel)
+lineinfile_group: "root"
+
+# Permissions du fichier (optionnel)
+lineinfile_mode: "0644"

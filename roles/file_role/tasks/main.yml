@@ -1,22 +1,21 @@
 ---
-# Rôle : file_role
-# Objectif : gérer des fichiers/répertoires/liens de manière dynamique
+- name: Vérifier que file_path est défini
+  fail:
+    msg: "La variable 'file_path' est obligatoire."
+  when: file_path == ""
 
-- name: Afficher un message si aucun item n'est fourni
-  ansible.builtin.debug:
-    msg: "Aucun élément à gérer (file_role_items est vide)."
-  when: file_role_items | length == 0
+- name: Vérifier que file_src est défini si l'état est 'link'
+  fail:
+    msg: "La variable 'file_src' est obligatoire lorsque file_state est 'link'."
+  when: file_state == "link" and file_src == ""
 
-- name: Gérer les fichiers/répertoires/liens définis dans file_role_items
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: "{{ item.state | default('file') }}"
-    owner: "{{ item.owner | default(omit) }}"
-    group: "{{ item.group | default(omit) }}"
-    mode: "{{ item.mode | default(omit) }}"
-    src: "{{ item.src | default(omit) }}"
-    recurse: "{{ item.recurse | default(omit) }}"
-  loop: "{{ file_role_items }}"
-  loop_control:
-    label: "{{ item.path }}"
-  when: file_role_items | length > 0
+- name: Gérer le fichier, répertoire ou lien symbolique avec module file
+  file:
+    path: "{{ file_path }}"
+    state: "{{ file_state }}"
+    owner: "{{ file_owner }}"
+    group: "{{ file_group }}"
+    mode: "{{ file_mode }}"
+    src: "{{ file_src | default(omit) }}"
+    follow: "{{ file_follow }}"
+  become: yes

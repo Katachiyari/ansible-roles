@@ -1,0 +1,28 @@
+---
+- name: Mettre à jour la liste des paquets apt
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Installer chrony
+  apt:
+    name: chrony
+    state: present
+  become: yes
+
+- name: Déployer la configuration chrony
+  template:
+    src: chrony.conf.j2
+    dest: "{{ chrony_config_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Chrony
+  become: yes
+
+- name: Activer et démarrer le service chrony
+  service:
+    name: chrony
+    state: started
+    enabled: yes
+  become: yes

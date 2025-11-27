@@ -1,95 +1,17 @@
 ---
-- name: Exemple avancé d'utilisation de unarchive_role
+- name: Extraire une archive sur les serveurs cibles
   hosts: all
-  become: true
-
-  vars:
-    unarchive_role_manage: true
-
-    unarchive_role_items:
-      # 1. Extraire une archive locale (présente sur le contrôleur) vers /opt/app
-      - src: "files/app_release.tar.gz"
-        dest: "/opt/app"
-        remote_src: false
-        owner: root
-        group: root
-        mode: "0755"
-        creates: "/opt/app/current"   # n'extrait pas si ce chemin existe déjà
-
-      # 2. Extraire une archive déjà présente sur le serveur distant
-      - src: "/tmp/dump.tar.gz"
-        dest: "/var/backups/app"
-        remote_src: true
-        owner: root
-        group: root
-        mode: "0700"
-
-      # 3. Extraire partiellement une archive (include/exclude)
-      - src: "files/website.zip"
-        dest: "/var/www/mywebsite"
-        remote_src: false
-        include:
-          - "public/*"
-        exclude:
-          - "public/tmp/*"
-        owner: www-data
-        group: www-data
-        mode: "0755"
-
-      # 4. Télécharger et extraire une archive distante (HTTPS) directement sur le serveur
-      #    (si tu utilises un URL en src, remote_src doit être true)
-      - src: "https://example.com/releases/app-latest.tar.gz"
-        dest: "/opt/app-latest"
-        remote_src: true
-        validate_certs: true
-        owner: root
-        group: root
-        mode: "0755"
+  become: yes
 
   roles:
     - role: unarchive_role
-#######################################################################################
-A. Utilisation minimale (un seul src/dest)
-YAML
-vars:
-  unarchive_role_items:
-    - src: "files/app.tar.gz"
-      dest: "/opt/app"
-
-roles:
-  - role: unarchive_role
-Pas d’owner, pas de mode, pas de creates → tout reste au comportement par défaut.
-########################################################################################
-B. Rôle désactivé dans un environnement
-YAML
-vars:
-  unarchive_role_manage: false
-Le rôle n’extrait rien, il affiche juste un message.
-#######################################################################################
-C. Combiner git_clone_role + unarchive_role + systemctlR_role
-Exemple de pipeline pro (idée rapide) :
-
-YAML
-- hosts: all
-  become: true
-
-  vars:
-    git_clone_role_repos:
-      - repo: "https://github.com/org/app-releases.git"
-        dest: "/opt/app-releases"
-
-    unarchive_role_items:
-      - src: "/opt/app-releases/app_v1.2.3.tar.gz"
-        dest: "/opt/app"
-        remote_src: true
-        creates: "/opt/app/current"
-
-    systemctlR_role_services:
-      - name: app.service
-        state: restarted
-        enabled: true
-
-  roles:
-    - role: git_clone_role
-    - role: unarchive_role
-    - role: systemctlR_role
+      vars:
+        unarchive_src: "/tmp/archive.tar.gz"     # Chemin local ou distant selon remote_src
+        unarchive_dest: "/opt/app/"
+        unarchive_remote_src: true               # true si archive déjà présente sur cible
+        unarchive_owner: "www-data"
+        unarchive_group: "www-data"
+        unarchive_mode: "0755"
+        unarchive_delete_after: false
+# Ce rôle déploie et extrait une archive dans un répertoire cible sur l’hôte distant.
+# Il propose le contrôle de la propriété, des droits et supprime l’archive après usage si demandé.

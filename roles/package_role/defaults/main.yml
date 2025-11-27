@@ -1,14 +1,9 @@
 ---
-# Activer ou non la gestion des paquets par ce rôle
-package_role_manage: true
+# Liste des paquets à gérer (installation, mise à jour ou suppression)
+package_list: []
 
-# Liste d'actions de gestion de paquets
-# Chaque item peut contenir :
-# - name (obligatoire) : nom du paquet OU liste de paquets
-# - state (optionnel) : present, absent, latest, etc. (par défaut 'present')
-# - manager (optionnel) : 'apt', 'yum', 'dnf', 'zypper', 'package'
-# - update_cache (optionnel, principalement pour apt/zypper)
-# - enablerepo, disablerepo (optionnels, yum/dnf)
-# - allow_downgrade (optionnel, yum/dnf)
-# - use_backend (optionnel, pour le module generic package)
-package_role_items: []
+# Etat désiré des paquets : 'present', 'latest' ou 'absent'
+package_state: present
+
+# Mise à jour du cache avant action (booléen)
+package_update_cache: true

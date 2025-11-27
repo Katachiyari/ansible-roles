@@ -1,0 +1,24 @@
+# chrony configuration file
+
+# Default to obtain time from public NTP servers
+{% for server in chrony_ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+
+# Allow chrony to adjust the system clock
+makestep 1.0 3
+
+# Record the rate at which the system clock gains/loses time
+driftfile /var/lib/chrony/chrony.drift
+
+# Save measurements for statistics
+rtcsync
+
+# Allow NTP client access from localhost only (typique configuration sécurisée)
+allow 127.0.0.1
+
+# Logs tracking
+logdir /var/log/chrony
+
+# Configuration supplémentaire
+{{ chrony_extra_config }}

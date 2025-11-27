@@ -1,41 +1,42 @@
-# Exemple d'utilisation du rôle Ansible file_role
 ---
----
-- name: Exemple d'utilisation avancée du rôle file_role
+- name: Gérer divers types de fichiers sur les serveurs Debian
   hosts: all
-  become: true
+  become: yes
 
-  vars:
-    file_role_items:
-      # 1. Créer un répertoire web
-      - path: /var/www/myapp
-        state: directory
-        owner: www-data
-        group: www-data
-        mode: "0755"
+  tasks:
+    - name: Créer un répertoire
+      include_role:
+        name: file_manage
+      vars:
+        file_path: "/var/www/html"
+        file_state: "directory"
+        file_owner: "www-data"
+        file_group: "www-data"
+        file_mode: "0755"
 
-      # 2. Créer un sous-répertoire uploads avec permissions différentes
-      - path: /var/www/myapp/uploads
-        state: directory
-        owner: www-data
-        group: www-data
-        mode: "0775"
+    - name: Créer un fichier vide
+      include_role:
+        name: file_manage
+      vars:
+        file_path: "/tmp/testfile"
+        file_state: "file"
+        file_owner: "root"
+        file_group: "root"
+        file_mode: "0644"
 
-      # 3. Créer un fichier vide (touch)
-      - path: /var/www/myapp/.env
-        state: touch
-        owner: www-data
-        group: www-data
-        mode: "0640"
+    - name: Créer un lien symbolique
+      include_role:
+        name: file_manage
+      vars:
+        file_path: "/usr/local/bin/myapp"
+        file_state: "link"
+        file_src: "/opt/myapp/bin/myapp"
+        file_owner: "root"
+        file_group: "root"
 
-      # 4. Créer un lien symbolique vers le dossier myapp
-      - path: /var/www/current
-        state: link
-        src: /var/www/myapp
-
-      # 5. Supprimer un ancien dossier si présent
-      - path: /tmp/old_data
-        state: absent
-
-  roles:
-    - role: file_role
+    - name: Supprimer un fichier ou dossier
+      include_role:
+        name: file_manage
+      vars:
+        file_path: "/tmp/oldfile"
+        file_state: "absent"

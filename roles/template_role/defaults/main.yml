@@ -1,15 +1,15 @@
 ---
-# Activer ou non la gestion des templates par ce rôle
-template_role_manage: true
+# Chemin relatif du template source dans le rôle (obligatoire)
+template_src: ""
 
-# Liste de templates à déployer
-# Chaque item peut contenir :
-# - src (obligatoire)   : nom du fichier .j2 dans roles/template_role/templates/ ou chemin relatif
-# - dest (obligatoire)  : chemin complet du fichier de destination
-# - owner (optionnel)   : propriétaire du fichier
-# - group (optionnel)   : groupe du fichier
-# - mode (optionnel)    : droits (ex: "0644")
-# - backup (optionnel)  : true/false, faire une sauvegarde avant de remplacer
-# - force (optionnel)   : forcer l’écriture même si Ansible pense que rien n’a changé
-# - validate (optionnel): commande de validation (ex: "nginx -t -c %s")
-template_role_items: []
+# Chemin absolu du fichier destination sur le système cible (obligatoire)
+template_dest: ""
+
+# Propriétaire du fichier déployé (optionnel)
+template_owner: "root"
+
+# Groupe du fichier déployé (optionnel)
+template_group: "root"
+
+# Permissions du fichier déployé (optionnel, ex: "0644")
+template_mode: "0644"

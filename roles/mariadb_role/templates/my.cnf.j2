@@ -1,0 +1,7 @@
+# Configuration personnalisée MariaDB gérée par Ansible
+
+[mysqld]
+bind-address = {{ mariadb_bind_address }}
+port = {{ mariadb_port }}
+
+# Autres options recommandées peuvent être ajoutées ici

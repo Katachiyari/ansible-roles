@@ -1,22 +1,27 @@
 ---
-# Activer ou non la gestion des utilisateurs
-user_role_manage: true
+# Nom de l’utilisateur à créer/gérer (obligatoire)
+user_name: ""
 
-# Liste d'utilisateurs à gérer
-# Chaque item peut contenir :
-# - name            (obligatoire) : nom de l'utilisateur
-# - state           (optionnel)   : present / absent (par défaut present)
-# - uid             (optionnel)
-# - gid             (optionnel)
-# - group           (optionnel)   : groupe principal
-# - groups          (optionnel)   : liste ou chaîne de groupes secondaires
-# - append          (optionnel)   : bool, ajouter aux groupes secondaires sans les remplacer
-# - shell           (optionnel)
-# - home            (optionnel)
-# - create_home     (optionnel)   : bool
-# - password        (optionnel)   : hash du mot de passe (jamais en clair en prod)
-# - system          (optionnel)   : bool, utilisateur système
-# - remove          (optionnel)   : bool, si state=absent → supprime le home ou pas
-# - ssh_authorized_keys (optionnel) : liste de clés SSH à mettre dans ~/.ssh/authorized_keys
-# - sudo            (optionnel)   : chaîne pour une ligne sudoers (ex: "%admin ALL=(ALL) NOPASSWD:ALL")
-user_role_users: []
+# UID (optionnel)
+user_uid: null
+
+# Groupe principal (optionnel)
+user_group: ""
+
+# Groupes supplémentaires (liste optionnelle)
+user_groups: []
+
+# Shell de l’utilisateur (par défaut /bin/bash)
+user_shell: "/bin/bash"
+
+# Home directory (automatique par défaut, peut être précisé)
+user_home: ""
+
+# Mot de passe chiffré (hash Linux) (optionnel, ne pas mettre en clair)
+user_password: ""
+
+# Créer le répertoire home si absent (booléen)
+user_create_home: true
+
+# Supprimer l’utilisateur si true, sinon crée/modifie (booléen)
+user_state: present

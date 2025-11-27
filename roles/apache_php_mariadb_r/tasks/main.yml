@@ -1,51 +1,82 @@
 ---
-# Update apt cache and install packages
-- name: Install Apache2 and PHP dependencies
-  ansible.builtin.apt:
-    name: "{{ item }}"
+- name: Mettre à jour la liste des paquets apt
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Installer paquets PHP de base
+  apt:
+    name: "{{ php_packages }}"
     state: present
-    update_cache: true
-  loop: "{{ web_packages }}"
-  notify: Restart apache
+  become: yes
 
-# Create document root
-- name: Ensure document root directory exists
-  ansible.builtin.file:
-    path: "{{ web_doc_root }}"
-    state: directory
-    owner: www-data
-    group: www-data
-    mode: '0755'
+- name: Installer MariaDB si activé
+  apt:
+    name: "{{ mariadb_packages }}"
+    state: present
+  when: use_mariadb
+  become: yes
 
-# Deploy Vhost configuration
-- name: Configure Apache VirtualHost
-  ansible.builtin.template:
+- name: Installer PostgreSQL si activé
+  apt:
+    name: "{{ postgres_packages }}"
+    state: present
+  when: use_postgres
+  become: yes
+
+- name: Installer Oracle si activé
+  apt:
+    name: "{{ oracle_packages }}"
+    state: present
+  when: use_oracle
+  become: yes
+
+- name: Installer MySQL si activé
+  apt:
+    name: "{{ mysql_packages }}"
+    state: present
+  when: use_mysql
+  become: yes
+
+- name: Déployer configuration vhost Apache
+  template:
     src: vhost.conf.j2
     dest: "/etc/apache2/sites-available/{{ web_domain }}.conf"
     owner: root
     group: root
     mode: '0644'
-  notify: Reload apache
+  notify: Reload Apache
+  become: yes
 
-# Enable the site (symlink creation logic via command wrapper)
-- name: Enable VirtualHost site
-  ansible.builtin.command:
-    cmd: "a2ensite {{ web_domain }}.conf"
+- name: Activer le site Apache
+  command: a2ensite "{{ web_domain }}.conf"
+  args:
     creates: "/etc/apache2/sites-enabled/{{ web_domain }}.conf"
-  notify: Reload apache
+  notify: Reload Apache
+  become: yes
 
-# Deploy test file
-- name: Deploy PHP test page
-  ansible.builtin.template:
+- name: Déployer page index.php dans le document root
+  template:
     src: index.php.j2
     dest: "{{ web_doc_root }}/index.php"
     owner: www-data
     group: www-data
     mode: '0644'
+  notify: Reload Apache
+  become: yes
 
-# Service management
-- name: Ensure Apache service is running
-  ansible.builtin.service:
-    name: "{{ web_service }}"
-    state: "{{ web_service_state }}"
-    enabled: "{{ web_service_enabled }}"
+- name: S'assurer que le répertoire document root existe
+  file:
+    path: "{{ web_doc_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  become: yes
+
+- name: Activer et démarrer Apache2
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+  become: yes

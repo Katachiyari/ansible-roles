@@ -1,0 +1,9 @@
+---
+# Nom du service à gérer (obligatoire)
+service_name: ""
+
+# Etat désiré du service : started, stopped, restarted, reloaded
+service_state: "started"
+
+# Active le service au démarrage du système (booléen)
+service_enabled: true

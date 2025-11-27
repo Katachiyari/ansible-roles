@@ -1,39 +1,28 @@
 ---
-# Rôle : git_clone_role
-# Objectif : cloner / mettre à jour des dépôts Git de manière dynamique
+- name: Vérifier que l'URL du dépôt Git est définie
+  fail:
+    msg: "La variable 'git_repo_url' est obligatoire."
+  when: git_repo_url == ""
 
-- name: Ne rien faire si git_clone_role_manage est à false
-  ansible.builtin.debug:
-    msg: "git_clone_role_manage est à false : le rôle ne gère aucun dépôt."
-  when: not git_clone_role_manage
-  tags: [git_clone]
+- name: Vérifier que le chemin de destination est défini
+  fail:
+    msg: "La variable 'git_dest' est obligatoire."
+  when: git_dest == ""
 
-# 1. Message si la liste est vide
-- name: Aucun dépôt Git à gérer
-  ansible.builtin.debug:
-    msg: "git_clone_role_repos est vide : aucun dépôt à cloner/mettre à jour."
-  when:
-    - git_clone_role_manage
-    - git_clone_role_repos | length == 0
-  tags: [git_clone]
+- name: Cloner ou mettre à jour le dépôt Git
+  git:
+    repo: "{{ git_repo_url }}"
+    dest: "{{ git_dest }}"
+    version: "{{ git_version }}"
+    force: "{{ git_force }}"
+    update: true
+    accept_hostkey: yes
+  become: yes
 
-# 2. Cloner / mettre à jour les dépôts
-- name: Cloner / mettre à jour les dépôts Git définis
-  ansible.builtin.git:
-    repo: "{{ item.repo }}"
-    dest: "{{ item.dest }}"
-    version: "{{ item.version | default('HEAD') }}"
-    accept_hostkey: "{{ item.accept_hostkey | default(false) }}"
-    force: "{{ item.force | default(false) }}"
-    update: "{{ item.update | default(true) }}"
-    clone: "{{ item.clone | default(true) }}"
-    key_file: "{{ item.key_file | default(omit) }}"
-    bare: "{{ item.bare | default(omit) }}"
-    depth: "{{ item.depth | default(omit) }}"
-  loop: "{{ git_clone_role_repos }}"
-  loop_control:
-    label: "{{ item.dest }}"
-  when:
-    - git_clone_role_manage
-    - git_clone_role_repos | length > 0
-  tags: [git_clone]
+- name: Appliquer le propriétaire et groupe sur le répertoire cloné
+  file:
+    path: "{{ git_dest }}"
+    owner: "{{ git_owner }}"
+    group: "{{ git_group }}"
+    recurse: yes
+  become: yes

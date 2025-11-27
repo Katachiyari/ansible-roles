@@ -1,0 +1,15 @@
+# Configuration NTP gérée par Ansible
+
+driftfile /var/lib/ntp/ntp.drift
+
+{% for server in ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+
+restrict default kod nomodify notrap nopeer noquery
+restrict 127.0.0.1
+restrict ::1
+
+logfile /var/log/ntp.log
+
+# Autres directives possibles ici

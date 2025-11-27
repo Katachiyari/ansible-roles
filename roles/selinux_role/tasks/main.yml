@@ -1,0 +1,55 @@
+---
+- name: Vérifier que l'OS est compatible SELinux (RedHat family)
+  fail:
+    msg: "ce rôle est destiné uniquement aux systèmes RedHat/CentOS avec SELinux."
+  when: ansible_os_family != "RedHat"
+
+- name: Installer les paquets SELinux nécessaires
+  yum:
+    name:
+      - selinux-policy
+      - selinux-policy-targeted
+      - policycoreutils-python-utils
+    state: present
+    update_cache: yes
+  when: selinux_install_packages
+  become: yes
+
+- name: Appliquer la politique SELinux configurée dans /etc/selinux/config
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: "SELINUX={{ selinux_mode }}"
+    backup: yes
+  become: yes
+
+- name: Configurer la politique SELinux dans /etc/selinux/config
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: '^SELINUXTYPE='
+    line: "SELINUXTYPE={{ selinux_policy }}"
+    backup: yes
+  become: yes
+
+- name: Récupérer le mode SELinux actuel
+  command: getenforce
+  register: selinux_current_mode
+  changed_when: false
+  become: yes
+
+- name: Changer le mode SELinux à runtime (temporaire jusqu'au reboot)
+  command: "setenforce {{ 1 if selinux_mode == 'enforcing' else 0 }}"
+  when: selinux_mode in ['enforcing', 'permissive'] and selinux_current_mode.stdout != selinux_mode.capitalize()
+  become: yes
+
+- name: Signaler que le reboot est requis si SELinux est désactivé ou mode modifié
+  debug:
+    msg: "Un redémarrage est recommandé pour appliquer pleinement la configuration SELinux."
+  when: selinux_mode == "disabled" or selinux_current_mode.stdout.lower() != selinux_mode
+
+- name: Redémarrer la machine si demandé par variable
+  reboot:
+    msg: "Redémarrage système pour appliquer configuration SELinux."
+    reboot_timeout: 600
+  when: selinux_force_reboot
+  become: yes

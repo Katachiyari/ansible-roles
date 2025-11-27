@@ -1,0 +1,25 @@
+---
+- name: Vérifier que le chemin du fichier et la ligne sont définis
+  fail:
+    msg: "Les variables 'lineinfile_path' et 'lineinfile_line' doivent être renseignées."
+  when: lineinfile_path == "" or lineinfile_line == ""
+
+- name: Assurer que le fichier existe (création vide si absent)
+  file:
+    path: "{{ lineinfile_path }}"
+    state: touch
+    owner: "{{ lineinfile_owner }}"
+    group: "{{ lineinfile_group }}"
+    mode: "{{ lineinfile_mode }}"
+  become: yes
+
+- name: Gérer la ligne dans le fichier avec lineinfile
+  lineinfile:
+    path: "{{ lineinfile_path }}"
+    regexp: "{{ lineinfile_regexp | default(omit) }}"
+    line: "{{ lineinfile_line }}"
+    state: "{{ lineinfile_state }}"
+    insertafter: "{{ lineinfile_insertafter | default(omit) }}"
+    insertbefore: "{{ lineinfile_insertbefore | default(omit) }}"
+    backrefs: "{{ lineinfile_backrefs }}"
+  become: yes

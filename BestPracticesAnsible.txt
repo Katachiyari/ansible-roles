@@ -8,9 +8,9 @@ Pas de modules shell/command inutiles : Utilisation prioritaire des modules déd
 
 Gestion des états : Utilisation exclusive des handlers pour les redémarrages de services.
 
-Sécurité et Permissions : Définition explicite des owner, group et mode lors de la création de fichiers ou dossiers.
+Sécurité et Permissions : Définition expicite des owner, group et mode lors de la création de fichiers ou dossiers.
 
-Organisation du code :
+Organisation du code : 
 
     Utilisez une structure de répertoires claire et suivez les conventions de nommage pour les variables, playbooks et rôles.
 
@@ -21,7 +21,7 @@ Factorisez le code en utilisant des rôles et des collections pour éviter la r�
 Stockez vos projets Ansible dans un système de contrôle de version comme Git.
 
     ​
-Gestion des variables :
+Gestion des variables : 
 
     Séparez les variables de la logique en utilisant group_vars et host_vars.
 

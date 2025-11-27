@@ -1,0 +1,24 @@
+---
+- name: Installer le paquet NTP
+  apt:
+    name: ntp
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Déployer la configuration NTP
+  template:
+    src: ntp.conf.j2
+    dest: "{{ ntp_config_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart NTP
+  become: yes
+
+- name: Activer et démarrer le service NTP
+  service:
+    name: ntp
+    state: "{{ ntp_service_state }}"
+    enabled: "{{ ntp_service_enabled }}"
+  become: yes

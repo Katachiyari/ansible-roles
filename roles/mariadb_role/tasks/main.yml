@@ -1,152 +1,84 @@
 ---
-# Rôle : mariadb_role
-# Objectif : installation, configuration réseau (bind), users, bases, tables
-
-- name: Ne rien faire si mariadb_role_manage est à false
-  ansible.builtin.debug:
-    msg: "mariadb_role_manage est à false : aucune action MariaDB exécutée."
-  when: not mariadb_role_manage
-  tags: [mariadb]
-  # On ne s'arrête pas le play, mais toutes les tâches suivantes sont conditionnées sur mariadb_role_manage
-
-############################################################
-# 1. Installation du serveur MariaDB
-############################################################
-
-- name: Installer MariaDB (Debian/Ubuntu)
-  ansible.builtin.apt:
-    name:
-      - mariadb-server
-      - mariadb-client
+- name: Installer les paquets MariaDB
+  apt:
+    name: "{{ mariadb_packages }}"
     state: present
-    update_cache: true
-  when:
-    - mariadb_role_manage
-    - mariadb_role_install_server
-    - ansible_os_family == "Debian"
-  tags: [mariadb, install]
+    update_cache: yes
+  become: yes
 
-# (Tu pourras ajouter les tâches équivalentes pour RedHat si besoin)
-
-############################################################
-# 2. Configuration du bind-address (0.0.0.0 ou autre)
-############################################################
-
-- name: Déployer un override de config pour MariaDB (bind-address)
-  ansible.builtin.template:
-    src: "mariadb_override.cnf.j2"
-    dest: "/etc/mysql/mariadb.conf.d/99-ansible-bind.cnf"
+- name: Déployer la configuration MariaDB personnalisée
+  template:
+    src: my.cnf.j2
+    dest: /etc/mysql/mariadb.conf.d/99-custom.cnf
     owner: root
     group: root
-    mode: "0644"
-  when:
-    - mariadb_role_manage
-    - mariadb_role_install_server
-    - ansible_os_family == "Debian"
-    - mariadb_role_bind_address | length > 0
+    mode: '0644'
   notify: Restart MariaDB
-  tags: [mariadb, config]
+  become: yes
 
-############################################################
-# 3. S'assurer que le service est démarré
-############################################################
-
-- name: S'assurer que MariaDB est démarré et activé
-  ansible.builtin.service:
+- name: Activer et démarrer le service MariaDB
+  service:
     name: mariadb
     state: started
-    enabled: true
-  when:
-    - mariadb_role_manage
-    - mariadb_role_ensure_running
-  tags: [mariadb, service]
+    enabled: yes
+  become: yes
 
-############################################################
-# 4. Création des bases de données
-############################################################
+- name: Définir mot de passe root et activer root localhost uniquement
+  mysql_user:
+    name: root
+    host: "localhost"
+    password: "{{ mariadb_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+    state: present
+  become: yes
 
-- name: Afficher un message si aucune base à gérer
-  ansible.builtin.debug:
-    msg: "Aucune base de données à gérer (mariadb_role_databases est vide)."
-  when:
-    - mariadb_role_manage
-    - mariadb_role_databases | length == 0
-  tags: [mariadb, db]
+- name: Supprimer les utilisateurs root distants (accès root non localhost)
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    state: absent
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  loop:
+    - '%'
+    - '::1'
+    - '127.0.0.1'
+  become: yes
 
-- name: Gérer les bases de données définies dans mariadb_role_databases
-  community.mysql.mysql_db:
-    name: "{{ item.name }}"
-    state: "{{ item.state | default('present') }}"
-    encoding: "{{ item.encoding | default(omit) }}"
-    collation: "{{ item.collation | default(omit) }}"
-    login_user: "{{ mariadb_role_root_user }}"
-    login_password: "{{ mariadb_role_root_password | default(omit) }}"
-    login_host: "{{ mariadb_role_root_login_host | default(omit) }}"
-    login_unix_socket: "{{ mariadb_role_root_login_unix_socket | default(omit) }}"
-  loop: "{{ mariadb_role_databases }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - mariadb_role_manage
-    - mariadb_role_databases | length > 0
-  tags: [mariadb, db]
+- name: Supprimer les utilisateurs anonymes
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  become: yes
 
-############################################################
-# 5. Création des utilisateurs
-############################################################
+- name: Supprimer la base de test
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  become: yes
 
-- name: Afficher un message si aucun utilisateur à gérer
-  ansible.builtin.debug:
-    msg: "Aucun utilisateur MariaDB à gérer (mariadb_role_users est vide)."
-  when:
-    - mariadb_role_manage
-    - mariadb_role_users | length == 0
-  tags: [mariadb, users]
+- name: Créer un utilisateur MariaDB avec tous privilèges si défini
+  mysql_user:
+    name: "{{ mariadb_user_name }}"
+    password: "{{ mariadb_user_password }}"
+    host: "%"
+    priv: "*.*:ALL PRIVILEGES"
+    state: present
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+  when: mariadb_user_name != "" and mariadb_user_password != ""
+  become: yes
 
-- name: Gérer les utilisateurs MariaDB définis dans mariadb_role_users
-  community.mysql.mysql_user:
-    name: "{{ item.name }}"
-    password: "{{ item.password | default(omit) }}"
-    host: "{{ item.host | default('%') }}"
-    priv: "{{ item.priv | default('*.*:ALL,GRANT') }}"
-    state: "{{ item.state | default('present') }}"
-    login_user: "{{ mariadb_role_root_user }}"
-    login_password: "{{ mariadb_role_root_password | default(omit) }}"
-    login_host: "{{ mariadb_role_root_login_host | default(omit) }}"
-    login_unix_socket: "{{ mariadb_role_root_login_unix_socket | default(omit) }}"
-  loop: "{{ mariadb_role_users }}"
-  loop_control:
-    label: "{{ item.name }}@{{ item.host | default('%') }}"
-  when:
-    - mariadb_role_manage
-    - mariadb_role_users | length > 0
-  tags: [mariadb, users]
-
-############################################################
-# 6. Création des tables via SQL
-############################################################
-
-- name: Afficher un message si aucune table à gérer
-  ansible.builtin.debug:
-    msg: "Aucune table à gérer (mariadb_role_tables est vide)."
-  when:
-    - mariadb_role_manage
-    - mariadb_role_tables | length == 0
-  tags: [mariadb, tables]
-
-- name: Gérer les tables MariaDB (création via SQL)
-  community.mysql.mysql_query:
-    login_user: "{{ mariadb_role_root_user }}"
-    login_password: "{{ mariadb_role_root_password | default(omit) }}"
-    login_host: "{{ mariadb_role_root_login_host | default(omit) }}"
-    login_unix_socket: "{{ mariadb_role_root_login_unix_socket | default(omit) }}"
-    db: "{{ item.db }}"
-    query: "{{ item.schema_sql }}"
-  loop: "{{ mariadb_role_tables }}"
-  loop_control:
-    label: "{{ item.db }}.{{ item.name }}"
-  when:
-    - mariadb_role_manage
-    - mariadb_role_tables | length > 0
-    - item.state | default('present') == 'present'
-  tags: [mariadb, tables]
+- name: Recharger les privilèges MySQL
+  mysql_query:
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    query: "FLUSH PRIVILEGES;"
+  become: yes

@@ -1,0 +1,13 @@
+---
+# Liste des serveurs NTP à utiliser
+ntp_servers:
+  - 0.debian.pool.ntp.org
+  - 1.debian.pool.ntp.org
+  - 2.debian.pool.ntp.org
+
+# Chemin du fichier de configuration ntp
+ntp_config_file: /etc/ntp.conf
+
+# Activer et démarrer le service ntp
+ntp_service_state: started
+ntp_service_enabled: true

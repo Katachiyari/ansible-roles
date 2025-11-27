@@ -1,0 +1,19 @@
+---
+- name: Mettre à jour la liste des paquets apt
+  apt:
+    update_cache: yes
+  when: apt_update_cache
+  become: yes
+
+- name: Effectuer la mise à niveau apt si demandé
+  apt:
+    upgrade: dist
+  when: apt_upgrade | bool
+  become: yes
+
+- name: Installer les paquets apt spécifiés
+  apt:
+    name: "{{ apt_packages }}"
+    state: present
+  when: apt_packages | length > 0
+  become: yes

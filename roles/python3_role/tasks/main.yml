@@ -1,86 +1,22 @@
 ---
-# Rôle : python3_role
-# Objectif : installation Python 3, pip, paquets globaux et virtualenvs
+- name: Déterminer la famille OS
+  set_fact:
+    python3_packages: "{{ python3_packages_debian if ansible_os_family == 'Debian' else python3_packages_redhat }}"
 
-- name: Ne rien faire si python3_role_manage est à false
-  ansible.builtin.debug:
-    msg: "python3_role_manage est à false : aucun changement Python 3."
-  when: not python3_role_manage
-  tags: [python3_role, python3]
+- name: Mettre à jour la cache des paquets si demandé (Debian)
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian" and python3_update_cache
+  become: yes
 
-############################################################
-# 1. Installation des paquets système (Python 3 + pip)
-############################################################
+- name: Mettre à jour la cache des paquets si demandé (RedHat)
+  yum:
+    update_cache: yes
+  when: ansible_os_family == "RedHat" and python3_update_cache
+  become: yes
 
-- name: Installer Python 3 et outils sur Debian/Ubuntu
-  ansible.builtin.apt:
-    name: "{{ python3_role_system_packages_debian }}"
+- name: Installer les paquets Python3 requis
+  package:
+    name: "{{ python3_packages }}"
     state: present
-    update_cache: true
-  when:
-    - python3_role_manage
-    - python3_role_install_python
-    - ansible_os_family == "Debian"
-  tags: [python3_role, python3, packages]
-
-- name: Installer Python 3 et outils sur RedHat/CentOS
-  ansible.builtin.yum:
-    name: "{{ python3_role_system_packages_redhat }}"
-    state: present
-  when:
-    - python3_role_manage
-    - python3_role_install_python
-    - ansible_os_family == "RedHat"
-  tags: [python3_role, python3, packages]
-
-############################################################
-# 2. Paquets Python globaux (hors virtualenv)
-############################################################
-
-- name: Aucun paquet Python global à gérer
-  ansible.builtin.debug:
-    msg: "python3_role_global_packages est vide : aucun paquet global à installer."
-  when:
-    - python3_role_manage
-    - python3_role_global_packages | length == 0
-  tags: [python3_role, python3, pip]
-
-- name: Gérer les paquets Python globaux
-  ansible.builtin.pip:
-    name: "{{ item.name }}"
-    state: "{{ item.state | default('present') }}"
-    version: "{{ item.version | default(omit) }}"
-    executable: "{{ item.executable | default(omit) }}"
-    extra_args: "{{ item.extra_args | default(omit) }}"
-  loop: "{{ python3_role_global_packages }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - python3_role_manage
-    - python3_role_global_packages | length > 0
-    - python3_role_install_pip
-  tags: [python3_role, python3, pip]
-
-############################################################
-# 3. Gestion des virtualenvs + paquets dans les venvs
-############################################################
-
-- name: Aucun virtualenv à gérer
-  ansible.builtin.debug:
-    msg: "python3_role_virtualenvs est vide : aucun virtualenv créé."
-  when:
-    - python3_role_manage
-    - python3_role_virtualenvs | length == 0
-  tags: [python3_role, python3, venv]
-
-# Pour gérer chaque virtualenv proprement, on délègue à un fichier de tâches
-- name: Gérer les virtualenvs Python
-  ansible.builtin.include_tasks: manage_venv.yml
-  loop: "{{ python3_role_virtualenvs }}"
-  loop_control:
-    loop_var: venv_item
-    label: "{{ venv_item.path }}"
-  when:
-    - python3_role_manage
-    - python3_role_virtualenvs | length > 0
-  tags: [python3_role, python3, venv]
+  become: yes

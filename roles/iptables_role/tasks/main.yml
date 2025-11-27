@@ -1,0 +1,44 @@
+---
+- name: Installer iptables et iptables-persistent si activé
+  apt:
+    name:
+      - iptables
+      - iptables-persistent
+    state: present
+    update_cache: yes
+  when: iptables_persistent
+  become: yes
+
+- name: Créer un fichier temporaire pour les règles iptables
+  copy:
+    content: |
+      *filter
+      :INPUT ACCEPT [0:0]
+      :FORWARD ACCEPT [0:0]
+      :OUTPUT ACCEPT [0:0]
+      {% for rule in iptables_rules %}
+      {{ rule }}
+      {% endfor %}
+      COMMIT
+    dest: /tmp/iptables_rules.v4
+    mode: '0600'
+  become: yes
+
+- name: Charger les règles iptables depuis le fichier temporaire
+  command: iptables-restore /tmp/iptables_rules.v4
+  become: yes
+
+- name: Sauvegarder les règles iptables pour persistance
+  copy:
+    src: /tmp/iptables_rules.v4
+    dest: "{{ iptables_save_file }}"
+    owner: root
+    group: root
+    mode: '0600'
+  become: yes
+
+- name: Nettoyer le fichier temporaire de règles
+  file:
+    path: /tmp/iptables_rules.v4
+    state: absent
+  become: yes

@@ -1,0 +1,9 @@
+---
+# Liste des paquets à installer (peut être modifiée en appelant le rôle)
+apt_packages: []
+
+# Met à jour la cache apt avant l'installation si à true
+apt_update_cache: true
+
+# Détermine si les paquets doivent être mis à jour (upgrade)
+apt_upgrade: no

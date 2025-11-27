@@ -1,0 +1,21 @@
+---
+# Chemin local vers le fichier source à copier (obligatoire)
+copy_src: ""
+
+# Chemin destination sur la machine cible (obligatoire)
+copy_dest: ""
+
+# Propriétaire du fichier copié (optionnel)
+copy_owner: "root"
+
+# Groupe du fichier copié (optionnel)
+copy_group: "root"
+
+# Permissions du fichier copié (optionnel, ex: '0644')
+copy_mode: "0644"
+
+# Permet de forcer la copie même si le fichier existe et est identique (booléen)
+copy_force: true
+
+# Remplacer les variables Jinja2 dans le contenu (booléen)
+copy_template: false

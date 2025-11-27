@@ -1,0 +1,13 @@
+---
+# Liste des serveurs NTP à utiliser
+chrony_ntp_servers:
+  - "0.debian.pool.ntp.org"
+  - "1.debian.pool.ntp.org"
+  - "2.debian.pool.ntp.org"
+
+# Nom du fichier de configuration chrony
+chrony_config_file: "/etc/chrony/chrony.conf"
+
+# Configuration optionnelle supplémentaire (chaine de texte)
+# Pour ajouter d'autres directives personnalisées dans chrony.conf
+chrony_extra_config: ""

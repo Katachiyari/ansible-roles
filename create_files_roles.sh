@@ -40,7 +40,7 @@ touch "roles/$name_role/vars/main.yml"
 
 # Create test files and documentation
 touch "roles/$name_role/tests/inventory"
-touch "roles/$name_role/tests/test.yml"
+touch "roles/$name_role/tests/test.yml" 
 touch "roles/$name_role/README.md"
 
 # Create .gitkeep for advanced folders to ensure git tracks them even if empty

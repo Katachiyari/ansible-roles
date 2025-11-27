@@ -1,0 +1,18 @@
+---
+# Commande à exécuter, obligatoire à définir lors de l'appel du rôle
+command_to_run: ""
+
+# Liste d'arguments éventuels (liste de chaînes, optionnel)
+command_args: []
+
+# Répertoire de travail pour la commande (optionnel)
+command_chdir: ""
+
+# Utiliser sudo/become pour exécuter la commande (booléen)
+command_become: true
+
+# Exécuter toujours la commande (ignore la validation de sortie précédente)
+command_always_run: false
+
+# Timeout en secondes pour la commande (optionnel)
+command_timeout: 30

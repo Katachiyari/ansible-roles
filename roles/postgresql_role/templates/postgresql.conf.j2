@@ -1,9 +1,6 @@
-# Fichier généré par Ansible (postgresql_role)
-# Ce fichier peut être un override ou remplacer la config existante,
-# selon ta stratégie. Ici, on part du principe qu'on gère au moins
-# listen_addresses et port.
+# Configuration PostgreSQL gérée par Ansible
 
-include_if_exists = 'postgresql.conf.d/*.conf'
+listen_addresses = '{{ postgres_listen_address }}'
+port = {{ postgres_port }}
 
-listen_addresses = '{{ postgresql_role_listen_addresses }}'
-port = {{ postgresql_role_port }}
+# Ajoutez ici d’autres directives souhaitées

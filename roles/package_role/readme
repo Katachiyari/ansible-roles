@@ -1,77 +1,18 @@
 ---
-- name: Exemple avancé d'utilisation de package_role
+- name: Gestion générique des paquets système avec le rôle package_role
   hosts: all
-  become: true
-
-  vars:
-    package_role_manage: true
-
-    package_role_items:
-      # 1. Installer des outils de base (gestion auto du manager)
-      - name:
-          - curl
-          - vim
-          - git
-        state: present
-        update_cache: true
-
-      # 2. S'assurer que 'telnet' est supprimé
-      - name: telnet
-        state: absent
-
-      # 3. Installer nginx (avec options apt/yum selon OS)
-      - name: nginx
-        state: present
-        update_cache: true
-
-      # 4. Exemple avancé RedHat : installer httpd depuis un repo spécifique
-      - name: httpd
-        state: latest
-        manager: yum
-        enablerepo: "epel"
-        disablerepo: "some-old-repo"
-
-      # 5. Fallback ou mix possible
-      - name: htop
-        state: present
+  become: yes
 
   roles:
     - role: package_role
+      vars:
+        package_list:
+          - nginx
+          - curl
+          - vim
+        package_state: present  # Installer les paquets (ou 'latest' pour MAJ, 'absent' pour supprimer)
+        package_update_cache: true
 
-    ######################################################################################
-    A. Utilisation minimale (juste des paquets à installer)
-YAML
-vars:
-  package_role_items:
-    - name:
-        - curl
-        - wget
-        - git
-Ici :
-
-pas de state → present par défaut,
-pas de manager → auto selon l’OS,
-pas de update_cache → false par défaut.
-######################################################################################
-B. Rôle présent dans le playbook mais désactivé dans un environnement
-YAML
-vars:
-  package_role_manage: false
-  package_role_items:
-    - name: nginx
-      state: present
-
-roles:
-  - role: package_role
-Le rôle ne fait qu’afficher un message et ne modifie rien.
-######################################################################################
-C. Cas OS mixte : même playbook pour Debian et RedHat
-Tu peux lancer le même playbook sur un inventaire qui contient :
-
-des hôtes Debian,
-des hôtes RedHat.
-Le package_role :
-
-sur Debian → utilisera apt,
-sur RedHat → utilisera yum,
-avec la même définition de package_role_items.
+#Ce rôle permet de gérer de façon uniforme et flexible les paquets système en s’adaptant au besoin : 
+#installation, mise à jour ou suppression. Il utilise le module package, compatible avec différents systèmes, 
+#et simplifie l’automatisation des gestionnaires de paquets via des variables centralisées.

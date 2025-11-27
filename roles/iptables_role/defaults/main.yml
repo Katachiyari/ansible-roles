@@ -1,0 +1,12 @@
+---
+# Liste des règles iptables à appliquer (chaînes de commandes iptables)
+# Exemple :
+# - "-A INPUT -p tcp --dport 22 -j ACCEPT"
+# - "-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+iptables_rules: []
+
+# Chemin vers le fichier de sauvegarde des règles
+iptables_save_file: "/etc/iptables/rules.v4"
+
+# Installer iptables-persistent pour persistance (booléen)
+iptables_persistent: true

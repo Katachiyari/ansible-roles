@@ -1,0 +1,14 @@
+---
+- name: Exécuter une commande personnalisée sur les serveurs
+  hosts: all
+  become: yes
+
+  roles:
+    - role: command_runner
+      vars:
+        command_to_run: "systemctl"
+        command_args:
+          - "restart"
+          - "apache2"
+        command_become: true
+        command_timeout: 20

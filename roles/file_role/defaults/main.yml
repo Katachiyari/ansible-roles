@@ -1,12 +1,21 @@
 ---
-# Variables par défaut pour le rôle file_role
+# Chemin complet de la cible à gérer (fichier, répertoire ou lien)
+file_path: ""
 
-# Liste d'objets décrivant des fichiers, répertoires, liens, etc.
-# Chaque item peut contenir :
-# - path (obligatoire) : chemin du fichier / répertoire / lien
-# - state (optionnel) : file, directory, link, touch, absent (par défaut: file)
-# - owner, group, mode (optionnels)
-# - src (optionnel, pour les liens symboliques)
-# - recurse (optionnel, pour appliquer owner/group/mode récursivement sur un dossier)
+# État désiré de la cible : 'file', 'directory', 'link', 'absent'
+file_state: "directory"
 
-file_role_items: []
+# Propriétaire (string, optionnel)
+file_owner: "root"
+
+# Groupe (string, optionnel)
+file_group: "root"
+
+# Permissions (string, mode numérique, ex: '0755', optionnel)
+file_mode: "0755"
+
+# Chemin cible si état 'link' (obligatoire si file_state = 'link')
+file_src: ""
+
+# Option pour suivre le lien symbolique ou non
+file_follow: false

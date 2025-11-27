@@ -1,42 +1,14 @@
 ---
-# Activer ou non la gestion Python 3 par ce rôle
-python3_role_manage: true
-
-# Installer Python 3 ?
-python3_role_install_python: true
-
-# Installer pip pour Python 3 ?
-python3_role_install_pip: true
-
-# Paquets système nécessaires pour Python/pip (multi-OS)
-python3_role_system_packages_debian:
+# Packages Python 3 suivant la famille d’OS
+python3_packages_debian:
   - python3
   - python3-pip
   - python3-venv
-  - python3-dev
-  - build-essential
 
-python3_role_system_packages_redhat:
+python3_packages_redhat:
   - python3
   - python3-pip
   - python3-virtualenv
-  - python3-devel
-  - gcc
 
-# Liste de paquets Python à installer globalement (hors virtualenv)
-# Chaque item peut contenir :
-# - name        (obligatoire) : nom du paquet (ou "pkg==version")
-# - version     (optionnel)   : version spécifique
-# - state       (optionnel)   : present / absent / latest (défaut: present)
-# - executable  (optionnel)   : chemin de pip (ex: /usr/bin/pip3)
-# - extra_args  (optionnel)   : options supplémentaires (ex: "--no-cache-dir")
-python3_role_global_packages: []
-
-# Liste de virtualenvs à créer + paquets à installer dedans
-# Chaque item peut contenir :
-# - path        (obligatoire) : chemin du virtualenv (ex: /opt/venv/app)
-# - python      (optionnel)   : chemin de l'interpréteur python (ex: /usr/bin/python3)
-# - state       (optionnel)   : present / absent (défaut: present, absent -> supprimer venv)
-# - packages    (optionnel)   : liste de paquets à installer dans ce venv
-#   - chaque paquet a la même structure que python3_role_global_packages
-python3_role_virtualenvs: []
+# Mettre à jour le cache des paquets avant installation (booléen)
+python3_update_cache: true

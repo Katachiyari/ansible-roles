@@ -1,81 +1,18 @@
 ---
-# Rôle : user_role
-# Objectif : gérer des utilisateurs et leurs clés SSH
+- name: Vérifier que le nom d’utilisateur est défini
+  fail:
+    msg: "La variable 'user_name' doit être renseignée."
+  when: user_name == ""
 
-- name: Ne rien faire si user_role_manage est à false
-  ansible.builtin.debug:
-    msg: "user_role_manage est à false : aucun utilisateur géré."
-  when: not user_role_manage
-  tags: [user_role, users]
-
-- name: Aucun utilisateur à gérer
-  ansible.builtin.debug:
-    msg: "user_role_users est vide : aucun utilisateur créé/supprimé."
-  when:
-    - user_role_manage
-    - user_role_users | length == 0
-  tags: [user_role, users]
-
-############################################################
-# 1. Gestion des comptes utilisateurs
-############################################################
-
-- name: Gérer les comptes utilisateurs
-  ansible.builtin.user:
-    name: "{{ item.name }}"
-    state: "{{ item.state | default('present') }}"
-    uid: "{{ item.uid | default(omit) }}"
-    group: "{{ item.group | default(omit) }}"
-    gid: "{{ item.gid | default(omit) }}"
-    groups: "{{ item.groups | default(omit) }}"
-    append: "{{ item.append | default(omit) }}"
-    shell: "{{ item.shell | default(omit) }}"
-    home: "{{ item.home | default(omit) }}"
-    create_home: "{{ item.create_home | default(omit) }}"
-    password: "{{ item.password | default(omit) }}"
-    system: "{{ item.system | default(omit) }}"
-    remove: "{{ item.remove | default(omit) }}"
-  loop: "{{ user_role_users }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - user_role_manage
-    - user_role_users | length > 0
-  tags: [user_role, users]
-
-############################################################
-# 2. Gestion des clés SSH authorized_keys (avec subelements)
-############################################################
-
-- name: Gérer les clés SSH authorized_keys
-  ansible.posix.authorized_key:
-    user: "{{ item.0.name }}"
-    key: "{{ item.1 }}"
-    state: present
-  loop: "{{ user_role_users | subelements('ssh_authorized_keys', skip_missing=True) }}"
-  loop_control:
-    label: "{{ item.0.name }}"
-  when:
-    - user_role_manage
-    - user_role_users | length > 0
-  tags: [user_role, ssh]
-############################################################
-# 3. Gestion optionnelle de sudoers
-############################################################
-
-- name: Créer des entrées sudoers pour les utilisateurs
-  ansible.builtin.copy:
-    dest: "/etc/sudoers.d/{{ item.name }}"
-    content: "{{ item.sudo }}"
-    owner: root
-    group: root
-    mode: "0440"
-    validate: "visudo -cf %s"
-  loop: "{{ user_role_users }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - user_role_manage
-    - user_role_users | length > 0
-    - item.sudo is defined
-  tags: [user_role, sudo]
+- name: Créer ou modifier un utilisateur système
+  user:
+    name: "{{ user_name }}"
+    uid: "{{ user_uid | default(omit) }}"
+    group: "{{ user_group | default(omit) }}"
+    groups: "{{ user_groups | default(omit) }}"
+    shell: "{{ user_shell }}"
+    home: "{{ user_home | default(omit) }}"
+    password: "{{ user_password | default(omit) }}"
+    create_home: "{{ user_create_home }}"
+    state: "{{ user_state }}"
+  become: yes

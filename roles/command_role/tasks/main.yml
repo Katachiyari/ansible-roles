@@ -1,0 +1,28 @@
+---
+- name: Vérifier que la commande est définie
+  fail:
+    msg: "La variable 'command_to_run' doit être renseignée pour exécuter ce rôle."
+  when: command_to_run == ""
+
+- name: Exécuter la commande spécifique
+  command: >
+    {{ command_to_run }}
+    {% if command_args | length > 0 %}
+      {{ command_args | join(' ') }}
+    {% endif %}
+  args:
+    chdir: "{{ command_chdir | default(omit) }}"
+    timeout: "{{ command_timeout }}"
+  become: "{{ command_become }}"
+  register: command_result
+  changed_when: command_result.rc == 0 and command_always_run
+  failed_when: command_result.rc != 0
+
+- name: Afficher la sortie standard de la commande
+  debug:
+    msg: "{{ command_result.stdout }}"
+
+- name: Afficher la sortie d'erreur de la commande si erreur
+  debug:
+    msg: "{{ command_result.stderr }}"
+  when: command_result.stderr != ""

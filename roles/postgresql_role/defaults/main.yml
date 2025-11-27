@@ -1,65 +1,17 @@
 ---
-# Activer ou non la gestion de PostgreSQL par ce rôle
-postgresql_role_manage: true
+postgres_packages:
+  - postgresql
+  - postgresql-contrib
+  - python3-psycopg2
 
-# Installer ou non PostgreSQL (serveur)
-postgresql_role_install_server: true
+postgres_version: 13
 
-# S'assurer que le service est démarré
-postgresql_role_ensure_running: true
+postgres_listen_address: "127.0.0.1"
+postgres_port: 5432
 
-# Version de PostgreSQL (facultatif, pour adapter les paquets / chemins si besoin)
-postgresql_role_version: ""
+# Utilisateur PostgreSQL à créer avec tous les droits
+postgres_user_name: ""
+postgres_user_password: ""
 
-# Adresse de bind du serveur PostgreSQL
-# Par exemple : "0.0.0.0" pour écouter sur toutes les interfaces
-# Si vide, on ne touche pas au bind-address (on laisse la config en place)
-postgresql_role_listen_addresses: ""
-
-# Port d'écoute de PostgreSQL
-postgresql_role_port: 5432
-
-# Répertoire principal de données (à adapter si tu customises)
-postgresql_role_data_dir: "/var/lib/postgresql/{{ postgresql_role_version | default('14') }}/main"
-
-# Fichier principal de configuration (Debian/Ubuntu default, adaptable)
-postgresql_role_config_file: "/etc/postgresql/{{ postgresql_role_version | default('14') }}/main/postgresql.conf"
-
-# Fichier pg_hba.conf
-postgresql_role_hba_file: "/etc/postgresql/{{ postgresql_role_version | default('14') }}/main/pg_hba.conf"
-
-# Paramètres de connexion superuser (habituellement 'postgres')
-# Dans la vraie vie : stocker le mot de passe dans Ansible Vault
-postgresql_role_superuser: "postgres"
-postgresql_role_superuser_password: ""
-postgresql_role_superuser_host: "localhost"
-
-# Méthode de connexion des modules (unix socket ou TCP)
-postgresql_role_login_unix_socket: "/var/run/postgresql"
-postgresql_role_login_port: "{{ postgresql_role_port }}"
-
-# Utilisateurs à créer
-# Chaque utilisateur est un dict :
-# - name (obligatoire)
-# - password (optionnel mais recommandé)
-# - db (optionnel, base par défaut)
-# - privs (optionnel, liste de droits par DB)
-# - role_attr_flags (optionnel, ex: 'SUPERUSER,CREATEDB,CREATEROLE,LOGIN')
-# - state (present/absent, par défaut present)
-postgresql_role_users: []
-
-# Bases de données à créer
-# Chaque base est un dict :
-# - name (obligatoire)
-# - owner (optionnel)
-# - encoding, lc_collate, lc_ctype, template (optionnels)
-# - state (present/absent, par défaut present)
-postgresql_role_databases: []
-
-# Tables à créer (via SQL)
-# Chaque élément :
-# - db (obligatoire)
-# - name (obligatoire, pour info)
-# - schema_sql (obligatoire) : SQL complet (CREATE TABLE IF NOT EXISTS ...)
-# - state (par défaut 'present' -> on exécute le SQL)
-postgresql_role_tables: []
+postgres_data_dir: "/var/lib/postgresql/{{ postgres_version }}/main"
+postgres_config_dir: "/etc/postgresql/{{ postgres_version }}/main"

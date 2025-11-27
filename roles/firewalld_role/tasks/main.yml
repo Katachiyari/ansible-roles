@@ -1,71 +1,39 @@
 ---
-# Rôle : firewalld_role
-# Objectif : gérer firewalld et ses règles de manière dynamique et optionnelle
-
-- name: Ne rien faire si la gestion de firewalld est désactivée
-  ansible.builtin.debug:
-    msg: "firewalld_role_manage est à false : le rôle ne fait aucune modification."
-  when: not firewalld_role_manage
-  tags: [firewalld]
-  # On stoppe ici si on ne veut rien faire
-  # Là on pourrait ajouter "meta: end_play" mais on va juste laisser les autres tasks conditionnées.
-
-# 1. Installer firewalld (optionnel)
-- name: Installer firewalld (RHEL/CentOS/Fedora)
-  ansible.builtin.yum:
-    name: firewalld
+- name: Installer firewalld et paquets associés
+  apt:
+    name: "{{ firewalld_packages }}"
     state: present
-  when:
-    - firewalld_role_manage
-    - firewalld_role_install
-    - ansible_os_family == "RedHat"
-  tags: [firewalld, install]
+    update_cache: yes
+  become: yes
 
-- name: Installer firewalld (Debian/Ubuntu)
-  ansible.builtin.apt:
-    name: firewalld
-    state: present
-    update_cache: true
-  when:
-    - firewalld_role_manage
-    - firewalld_role_install
-    - ansible_os_family == "Debian"
-  tags: [firewalld, install]
-
-# 2. S'assurer que firewalld est démarré (optionnel)
-- name: S'assurer que firewalld est démarré et activé
-  ansible.builtin.service:
+- name: Activer et démarrer firewalld
+  service:
     name: firewalld
     state: started
-    enabled: true
-  when:
-    - firewalld_role_manage
-    - firewalld_role_ensure_running
-  tags: [firewalld, service]
+    enabled: "{{ firewalld_enabled }}"
+  become: yes
 
-# 3. Afficher un message si aucune règle n'est fournie
-- name: Aucune règle firewalld à gérer
-  ansible.builtin.debug:
-    msg: "firewalld_role_rules est vide : aucune règle ajoutée/supprimée."
-  when:
-    - firewalld_role_manage
-    - firewalld_role_rules | length == 0
-  tags: [firewalld, rules]
+- name: Ouvrir les ports spécifiés dans firewalld
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    zone: "{{ firewalld_zone }}"
+    state: enabled
+  loop: "{{ firewalld_ports }}"
+  when: firewalld_ports | length > 0
+  become: yes
 
-# 4. Appliquer les règles firewalld si la liste n'est pas vide
-- name: Gérer dynamiquement les règles firewalld
-  ansible.posix.firewalld:
-    zone: "{{ item.zone | default('public') }}"
-    service: "{{ item.service | default(omit) }}"
-    port: "{{ item.port | default(omit) }}"
-    rich_rule: "{{ item.rich_rule | default(omit) }}"
-    state: "{{ item.state | default('enabled') }}"
-    permanent: "{{ item.permanent | default(true) }}"
-    immediate: "{{ item.immediate | default(true) }}"
-  loop: "{{ firewalld_role_rules }}"
-  loop_control:
-    label: "{{ item.service | default(item.port | default(item.rich_rule | default('rule'))) }}"
-  when:
-    - firewalld_role_manage
-    - firewalld_role_rules | length > 0
-  tags: [firewalld, rules]
+- name: Autoriser les services spécifiés dans firewalld
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    zone: "{{ firewalld_zone }}"
+    state: enabled
+  loop: "{{ firewalld_services }}"
+  when: firewalld_services | length > 0
+  become: yes
+
+- name: Recharger la configuration firewalld pour appliquer les changements
+  command: firewall-cmd --reload
+  when: (firewalld_ports | length > 0) or (firewalld_services | length > 0)
+  become: yes

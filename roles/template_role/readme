@@ -1,78 +1,15 @@
 ---
-- name: Exemple avancé d'utilisation de template_role
+- name: Déployer un fichier de configuration via template
   hosts: all
-  become: true
-
-  vars:
-    # Variables globales utilisées dans les templates (facultatif)
-    vhost_server_name: "example.local"
-    vhost_root: "/var/www/example"
-    app_env: "prod"
-    app_name: "SuperApp"
-    db_host: "localhost"
-    db_user: "appuser"
-    db_pass: "SuperMotDePasse!"
-
-    template_role_manage: true
-
-    template_role_items:
-      # 1. Déployer un vhost nginx avec validation de la config
-      - src: "nginx_vhost.conf.j2"
-        dest: "/etc/nginx/sites-available/{{ vhost_server_name }}.conf"
-        owner: root
-        group: root
-        mode: "0644"
-        backup: true
-        validate: "nginx -t -c %s"
-
-      # 2. Déployer le même vhost dans sites-enabled via un autre rôle (ou file_role)
-      #    Ici on ne le fait pas, mais tu pourrais utiliser file_role pour le symlink.
-
-      # 3. Déployer un fichier d'environnement applicatif
-      - src: "app.env.j2"
-        dest: "/var/www/example/.env"
-        owner: www-data
-        group: www-data
-        mode: "0640"
-        backup: true
+  become: yes
 
   roles:
     - role: template_role
-#######################################################################################
-A. Utilisation minimale (juste 1 template)
-YAML
-vars:
-  template_role_items:
-    - src: "simple.conf.j2"
-      dest: "/etc/simple.conf"
-
-roles:
-  - role: template_role
-Pas d’owner, pas de mode, etc. → tout est optionnel.
-#######################################################################################
-B. Désactiver le rôle dans un environnement
-YAML
-vars:
-  template_role_manage: false
-Le rôle n’applique aucun template.
-#######################################################################################
-C. Intégration avec systemctlR_role
-Exemple simplifié :
-
-YAML
-- hosts: all
-  become: true
-
-  vars:
-    template_role_items:
-      - src: "nginx_vhost.conf.j2"
-        dest: "/etc/nginx/sites-available/example.conf"
-        validate: "nginx -t -c %s"
-
-    systemctlR_role_services:
-      - name: nginx
-        state: restarted
-
-  roles:
-    - role: template_role
-    - role: systemctlR_role
+      vars:
+        template_src: "myconfig.conf.j2"    # Chemin relatif dans le dossier templates du rôle
+        template_dest: "/etc/myapp/myconfig.conf"
+        template_owner: "root"
+        template_group: "root"
+        template_mode: "0644"
+# Ce rôle déploie un fichier via un template Jinja2, permettant d’adapter
+# dynamiquement la configuration selon les variables fournies.
