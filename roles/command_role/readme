@@ -1,10 +1,10 @@
 ---
-- name: Exécuter une commande personnalisée sur les serveurs
+- name: Exécuter une commande personnalisée distante
   hosts: all
   become: yes
 
   roles:
-    - role: command_runner
+    - role: command_role
       vars:
         command_to_run: "systemctl"
         command_args:
@@ -12,3 +12,6 @@
           - "apache2"
         command_become: true
         command_timeout: 20
+
+# Ce rôle exécute une commande arbitraire sur l’hôte cible, avec paramétrage complet.
+# Il permet de définir la commande, ses arguments, le délai d’attente et l’élévation de privilèges.

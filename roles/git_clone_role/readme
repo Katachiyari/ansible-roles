@@ -1,5 +1,5 @@
 ---
-- name: Cloner un dépôt Git dans le répertoire cible
+- name: Cloner un dépôt Git sur l’hôte distant
   hosts: all
   become: yes
 
@@ -12,3 +12,6 @@
         git_owner: "www-data"
         git_group: "www-data"
         git_force: true
+
+# Ce rôle clone ou met à jour un dépôt Git dans un répertoire cible, avec gestion des permissions.
+# Il permet de définir l’URL du dépôt, la branche ou le tag, le chemin de destination, le propriétaire, le groupe et l’option de forçage.

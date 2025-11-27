@@ -1,10 +1,10 @@
 ---
-- name: Déployer firewalld et configurer règles
-  hosts: all
+- name: Installer et configurer firewalld
+  hosts: firewall_hosts
   become: yes
 
   roles:
-    - role: firewalld_manage
+    - role: firewalld
       vars:
         firewalld_ports:
           - "80/tcp"
@@ -13,3 +13,6 @@
           - ssh
         firewalld_zone: "public"
         firewalld_enabled: true
+
+# Ce rôle installe firewalld, configure les règles pour autoriser ports et services spécifiés, et active le firewall.
+# Il permet de définir la zone, les ports, les services et l’état (activé/désactivé) du firewall.

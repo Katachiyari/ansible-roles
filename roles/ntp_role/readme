@@ -1,26 +1,5 @@
-
-# Rôle Ansible ntp_role
-
-## Description
-
-Ce rôle installe et configure le service NTP (Network Time Protocol) sur un système Debian. Il permet de synchroniser correctement la date et l’heure du serveur avec des serveurs de temps fiables. La synchronisation temporelle est essentielle pour la cohérence des logs, la sécurité, la planification des tâches, et de nombreux services réseau.
-
-## Fonctionnalités
-
-- Installation du paquet `ntp`.  
-- Déploiement d’une configuration personnalisable basée sur la liste de serveurs NTP définie.  
-- Activation et démarrage du service `ntp`.  
-- Redémarrage automatique en cas de modification de la configuration.  
-
-## Variables principales
-
-- `ntp_servers`: liste des serveurs NTP à utiliser (par défaut les pools Debian).  
-- `ntp_config_file`: chemin vers le fichier de config NTP.  
-- `ntp_service_state`: état du service (par défaut `started`).  
-- `ntp_service_enabled`: activation automatique du service au démarrage (par défaut `true`).  
-
-## Exemple d’utilisation
-- name: Installer et configurer NTP sur serveurs Debian
+---
+- name: Installer et configurer NTP pour synchronisation horaire
   hosts: all
   become: yes
 
@@ -30,5 +9,7 @@ Ce rôle installe et configure le service NTP (Network Time Protocol) sur un sys
         ntp_servers:
           - time.google.com
           - ntp.ubuntu.com
-        ntp_service_state: started
-        ntp_service_enabled: true
+
+# Ce rôle installe le service NTP, configure les serveurs à utiliser,
+# et active le service pour maintenir l’heure système synchronisée.
+# Il permet de définir une liste de serveurs NTP personnalisés.

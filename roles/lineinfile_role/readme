@@ -1,5 +1,5 @@
 ---
-- name: Modifier ou insérer une ligne dans un fichier de configuration
+- name: Modifier une ligne dans un fichier de configuration
   hosts: all
   become: yes
 
@@ -11,3 +11,6 @@
         lineinfile_line: "max_connections=200"
         lineinfile_state: "present"
         lineinfile_insertafter: "EOF"
+
+# Ce rôle insère, modifie ou supprime une ligne dans un fichier texte via expression régulière.
+# Il permet de définir le chemin du fichier, la ligne à gérer, l’expression régulière de recherche,

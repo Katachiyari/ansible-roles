@@ -1,10 +1,10 @@
 ---
-- name: Copier un fichier statique sur les serveurs
+- name: Copier un fichier local vers l’hôte distant
   hosts: all
   become: yes
 
   roles:
-    - role: copy_file
+    - role: copy_role
       vars:
         copy_src: "files/example.conf"
         copy_dest: "/etc/example/example.conf"
@@ -12,3 +12,6 @@
         copy_group: "root"
         copy_mode: "0644"
         copy_template: false
+
+# Ce rôle copie un fichier statique ou template vers l’hôte, avec contrôle des permissions.
+# Il permet de définir la source, la destination, le propriétaire, le groupe et les droits du fichier copié.
