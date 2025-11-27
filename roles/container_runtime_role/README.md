@@ -18,3 +18,5 @@
 
 # Ce rôle installe un runtime container standard (containerd), déploie sa config,
 # et assure le démarrage du service pour supports Docker, Kubernetes, et autres orchestrateurs.
+# Un runtime container (ou moteur de conteneur) est le logiciel clé qui 
+# effectue les opérations de base nécessaires pour exécuter et gérer des conteneurs sur un système d'exploitation hôte.

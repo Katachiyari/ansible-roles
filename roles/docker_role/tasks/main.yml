@@ -1,85 +1,154 @@
 ---
-- name: Déterminer le gestionnaire de paquets
-  set_fact:
-    docker_pkg_mgr: "{{ 'apt' if ansible_os_family == 'Debian' else 'yum' }}"
+# Commentaires en fin de ligne explique la commande
+# Nettoyage complet des installations Docker précédentes
 
-- name: Installer les dépendances Docker (Debian)
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - gnupg
-      - lsb-release
-    state: present
-    update_cache: yes
-  when: ansible_os_family == "Debian"
+- name: Lister fichiers apt sources contenant docker
+  shell: grep -rl docker /etc/apt/sources.list /etc/apt/sources.list.d || true # Recherche tous les fichiers sources APT contenant "docker"
+  register: docker_source_files # Enregistre le résultat dans une variable
   become: yes
 
-- name: Installer les dépendances Docker (RedHat)
-  yum:
-    name:
-      - yum-utils
-      - device-mapper-persistent-data
-      - lvm2
-    state: present
-  when: ansible_os_family == "RedHat"
+- debug:
+    var: docker_source_files.stdout_lines # Affiche les fichiers trouvés
+
+- name: Nettoyer TOUS les fichiers sources Docker
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ docker_source_files.stdout_lines }}"
   become: yes
 
-- name: Ajouter la clé GPG Docker officielle (Debian)
-  apt_key:
-    url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
-    state: present
-  when: docker_install_official_repo and ansible_os_family == "Debian"
+- name: Supprimer les clés Docker orphelines
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: # Liste des chemins de clés Docker courants
+    - /etc/apt/keyrings/docker.gpg
+    - /usr/share/keyrings/docker-archive-keyring.gpg
   become: yes
 
-- name: Ajouter le dépôt Docker officiel (Debian)
-  apt_repository:
-    repo: "deb [arch={{ ansible_architecture }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} stable"
-    state: present
-    update_cache: yes
-  when: docker_install_official_repo and ansible_os_family == "Debian"
-  become: yes
-
-- name: Ajouter le dépôt Docker officiel (RedHat)
-  yum_repository:
-    name: docker-ce-stable
-    description: Docker CE Stable
-    baseurl: https://download.docker.com/linux/{{ ansible_distribution | lower }}
-    enabled: yes
-    gpgcheck: yes
-    gpgkey: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
-  when: docker_install_official_repo and ansible_os_family == "RedHat"
-  become: yes
-
-- name: Installer les paquets Docker
-  package:
-    name: "{{ docker_packages }}"
-    state: present
-    update_cache: yes
-  become: yes
-
-- name: Créer le fichier de configuration Docker daemon
-  template:
-    src: daemon.json.j2
-    dest: /etc/docker/daemon.json
-    owner: root
-    group: root
-    mode: '0644'
-  when: docker_daemon_config | length > 0
-  notify: Restart Docker
-  become: yes
-
-- name: Ajouter l'utilisateur au groupe docker
-  user:
-    name: "{{ docker_user }}"
-    groups: docker
-    append: yes
-  when: docker_user != ""
-  become: yes
-
-- name: Activer et démarrer le service Docker
+- name: Arrêter Docker si présent
   service:
     name: docker
-    state: started
-    enabled: "{{ docker_service_enabled }}"
+    state: stopped
+  ignore_errors: yes
   become: yes
+
+- name: Nettoyer TOUS les fichiers Docker APT
+  block:
+    - file:
+        path: "{{ item }}"
+        state: absent
+      loop: # Liste des fichiers Docker APT courants
+        - /etc/apt/sources.list.d/docker*
+        - /etc/apt/sources.list.d/*docker*
+        - /etc/apt/keyrings/docker*
+        - /usr/share/keyrings/docker*
+        - /etc/apt/trusted.gpg.d/docker*
+      become: yes
+      
+    - shell: sed -i '/docker.com/d' /etc/apt/sources.list # Supprime les lignes contenant "docker.com"
+      become: yes
+
+- name: Nettoyer paquets Docker installés
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: absent
+    purge: yes
+  ignore_errors: yes
+  become: yes
+
+- name: Update APT après nettoyage TOTAL
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Installer prérequis
+  apt:
+    name:
+      - ca-certificates # Pour les certificats SSL
+      - curl # Pour télécharger des fichiers via HTTPS
+      - gnupg # Pour gérer les clés GPG
+      - lsb-release # Pour obtenir des informations sur la distribution
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer /etc/apt/keyrings #Créer le répertoire pour les clés APT
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Télécharger GPG Docker
+  shell: |
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
+  args:
+    creates: /etc/apt/keyrings/docker.gpg
+  become: yes
+
+- name: Permissions GPG
+  file:
+    path: /etc/apt/keyrings/docker.gpg
+    mode: '0644'
+  become: yes
+
+- name: Créer /etc/apt/sources.list.d/docker.list (EXACT Docker docs)
+  copy:
+    content: |
+      deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    dest: /etc/apt/sources.list.d/docker.list
+    mode: '0644'
+  notify: apt update
+  become: yes
+
+- name: Installer Docker CE #Installer Docker Community Edition
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Démarrer Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Ajouter utilisateur au groupe docker
+  user:
+    name: "{{ docker_user | default(ansible_user_id) }}"
+    groups: docker
+    append: yes # Ajoute sans supprimer les autres groupes
+  become: yes
+
+- name: Vérifier installation Docker
+  command: docker --version
+
+- name: Tester Docker (avec sudo)
+  shell: sudo docker run hello-world
+  register: docker_run_result
+  ignore_errors: yes
+
+# afficher le hello hello-world
+- debug:
+    var: docker_run_result.stdout_lines # Affiche la sortie de la commande docker run
+
+- name: Vérifier si utilisateur appartient au groupe docker
+  command: id -nG {{ docker_user | default(ansible_user_id) }}
+  register: groups_check
+
+- name: Afficher si utilisateur dans groupe docker
+  debug:
+    msg: "Utilisateur dans groupe docker : {{ 'docker' in groups_check.stdout.split() }}"
