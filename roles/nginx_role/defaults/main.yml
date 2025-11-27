@@ -1,0 +1,21 @@
+---
+# Sites NGINX à configurer (multi-sites)
+nginx_sites: []
+
+# Exemple :
+# - name: "example.com"
+#   server_name: "example.com www.example.com"
+#   root: "/var/www/example.com"
+#   ports: ["80"]
+#   ssl: false
+#   proxy_pass: null
+#   extra_config: |
+
+# Configuration globale NGINX
+nginx_config:
+  worker_processes: "auto"
+  worker_connections: "1024"
+  keepalive_timeout: "65"
+
+# Activer NGINX au démarrage
+nginx_enabled: true

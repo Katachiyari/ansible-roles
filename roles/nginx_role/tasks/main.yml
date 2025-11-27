@@ -1,0 +1,66 @@
+---
+- name: Déterminer gestionnaire paquets
+  set_fact:
+    pkg_mgr: "{{ 'apt' if ansible_os_family == 'Debian' else 'yum' }}"
+
+- name: Installer paquets NGINX
+  package:
+    name: "{{ 'nginx' if ansible_os_family == 'Debian' else 'nginx' }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer répertoires sites web
+  file:
+    path: "{{ item.root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  loop: "{{ nginx_sites }}"
+  when: item.root is defined
+  become: yes
+
+- name: Déployer configuration globale NGINX
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Test & Restart NGINX
+  become: yes
+
+- name: Déployer configurations sites (vhost)
+  template:
+    src: sites-available-default.j2
+    dest: "/etc/nginx/sites-available/{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nginx_sites }}"
+  notify: Test & Restart NGINX
+  become: yes
+
+- name: Activer sites (symlinks)
+  file:
+    src: "/etc/nginx/sites-available/{{ item.name }}"
+    dest: "/etc/nginx/sites-enabled/{{ item.name }}"
+    state: link
+  loop: "{{ nginx_sites }}"
+  notify: Test & Restart NGINX
+  become: yes
+
+- name: Supprimer site par défaut
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Test & Restart NGINX
+  become: yes
+
+- name: Activer et démarrer NGINX
+  service:
+    name: nginx
+    state: started
+    enabled: "{{ nginx_enabled }}"
+  become: yes

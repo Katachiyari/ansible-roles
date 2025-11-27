@@ -1,0 +1,23 @@
+# Configuration NGINX gérée par Ansible
+user www-data;
+worker_processes {{ nginx_config.worker_processes }};
+pid /run/nginx.pid;
+
+events {
+    worker_connections {{ nginx_config.worker_connections }};
+    multi_accept on;
+}
+
+http {
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout {{ nginx_config.keepalive_timeout }};
+    types_hash_max_size 2048;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}

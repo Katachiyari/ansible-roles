@@ -1,0 +1,28 @@
+# Site {{ item.name }} - {{ ansible_date_time.date }}
+server {
+{% for port in item.ports %}
+    listen {{ port }};
+{% endfor %}
+    server_name {{ item.server_name }};
+
+{% if item.root %}
+    root {{ item.root }};
+    index index.html index.htm index.php;
+{% endif %}
+
+{% if item.proxy_pass %}
+    location / {
+        proxy_pass {{ item.proxy_pass }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+{% else %}
+    location / {
+        try_files $uri $uri/ =404;
+    }
+{% endif %}
+
+{% if item.extra_config %}
+{{ item.extra_config }}
+{% endif %}
+}

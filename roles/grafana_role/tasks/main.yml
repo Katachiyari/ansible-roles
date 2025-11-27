@@ -1,0 +1,49 @@
+---
+- name: Ajouter clé GPG Grafana (Debian)
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Ajouter dépôt Grafana (Debian)
+  apt_repository:
+    repo: "deb https://packages.grafana.com/oss/deb stable main"
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Installer Grafana
+  package:
+    name: "grafana{{ '' if ansible_os_family == 'Debian' else '-enterprise' }}"
+    state: present
+  become: yes
+
+- name: Déployer configuration Grafana
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: Restart Grafana
+  become: yes
+
+- name: Copier dashboards personnalisés
+  copy:
+    src: "{{ item }}"
+    dest: "/var/lib/grafana/dashboards/{{ item | basename }}"
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  loop: "{{ grafana_dashboards }}"
+  notify: Restart Grafana
+  become: yes
+
+- name: Activer et démarrer Grafana
+  service:
+    name: grafana-server
+    state: started
+    enabled: "{{ grafana_enabled }}"
+  become: yes

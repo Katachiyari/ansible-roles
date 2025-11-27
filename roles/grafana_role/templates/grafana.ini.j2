@@ -1,0 +1,24 @@
+# Configuration Grafana gérée par Ansible
+[server]
+http_port = {{ grafana_server.http_port }}
+domain = {{ grafana_server.domain }}
+root_url = {{ grafana_server.root_url }}
+
+[database]
+type = sqlite3
+path = /var/lib/grafana/grafana.db
+
+[security]
+admin_user = {{ grafana_admin.user }}
+admin_password = {{ grafana_admin.password }}
+
+[users]
+auto_assign_org = true
+auto_assign_org_role = Editor
+
+[auth.anonymous]
+enabled = false
+
+[log]
+mode = console files
+level = info

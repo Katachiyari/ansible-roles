@@ -1,0 +1,29 @@
+---
+# Version Elasticsearch
+elasticsearch_version: "8.11.0"
+
+# Mode : 'single-node' ou 'cluster'
+elasticsearch_mode: "single-node"
+
+# Configuration cluster
+elasticsearch_cluster:
+  name: "elasticsearch"
+  node_name: "{{ inventory_hostname }}"
+  discovery_seed_hosts: []
+  cluster_initial_master_nodes: []
+
+# Configuration réseau
+elasticsearch_network:
+  host: "0.0.0.0"
+  http_port: 9200
+  transport_port: 9300
+
+# JVM Heap (50% RAM max recommandé)
+elasticsearch_jvm_heap: "1g"
+
+# Répertoire data/logs
+elasticsearch_paths:
+  data: "/var/lib/elasticsearch"
+  logs: "/var/log/elasticsearch"
+
+elasticsearch_enabled: true

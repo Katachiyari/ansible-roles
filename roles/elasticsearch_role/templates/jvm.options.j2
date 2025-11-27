@@ -1,0 +1,7 @@
+# JVM Options Elasticsearch
+-Xms{{ elasticsearch_jvm_heap }}
+-Xmx{{ elasticsearch_jvm_heap }}
+
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=100
+-XX:G1HeapRegionSize=4m

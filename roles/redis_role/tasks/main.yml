@@ -1,0 +1,24 @@
+---
+- name: Installer Redis
+  package:
+    name: "{{ 'redis-server' if ansible_os_family == 'Debian' else 'redis' }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Déployer configuration Redis
+  template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf
+    owner: redis
+    group: redis
+    mode: '0644'
+  notify: Restart Redis
+  become: yes
+
+- name: Activer et démarrer Redis
+  service:
+    name: "{{ 'redis-server' if ansible_os_family == 'Debian' else 'redis' }}"
+    state: started
+    enabled: "{{ redis_enabled }}"
+  become: yes

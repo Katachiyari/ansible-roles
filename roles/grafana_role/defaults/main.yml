@@ -1,0 +1,28 @@
+---
+# Version Grafana
+grafana_version: "10.4.0"
+
+# Configuration admin
+grafana_admin:
+  user: "admin"
+  password: "admin123!"  # Changer en production !
+
+# Serveur web
+grafana_server:
+  http_port: 3000
+  domain: "grafana.local"
+  root_url: ""
+
+# Datasources à configurer
+grafana_datasources: []
+
+# Exemple :
+# - name: "Prometheus"
+#   type: "prometheus"
+#   url: "http://localhost:9090"
+#   isDefault: true
+
+# Dashboards à importer
+grafana_dashboards: []
+
+grafana_enabled: true

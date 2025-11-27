@@ -1,0 +1,11 @@
+---
+- name: Test NGINX config
+  command: nginx -t
+  changed_when: false
+  become: yes
+
+- name: Restart NGINX
+  service:
+    name: nginx
+    state: restarted
+  become: yes

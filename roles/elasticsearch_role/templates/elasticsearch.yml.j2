@@ -1,0 +1,31 @@
+# Configuration Elasticsearch - {{ ansible_date_time.date }}
+cluster.name: {{ elasticsearch_cluster.name }}
+node.name: {{ elasticsearch_cluster.node_name }}
+
+{% if elasticsearch_mode == "single-node" %}
+node.data: true
+node.master: true
+{% else %}
+{% if 'master' in group_names %}
+node.master: true
+node.data: false
+{% else %}
+node.master: false
+node.data: true
+{% endif %}
+{% endif %}
+
+network.host: {{ elasticsearch_network.host }}
+http.port: {{ elasticsearch_network.http_port }}
+
+path.data: {{ elasticsearch_paths.data }}
+path.logs: {{ elasticsearch_paths.logs }}
+
+{% if elasticsearch_cluster.discovery_seed_hosts %}
+discovery.seed_hosts: {{ elasticsearch_cluster.discovery_seed_hosts }}
+{% endif %}
+{% if elasticsearch_cluster.cluster_initial_master_nodes %}
+cluster.initial_master_nodes: {{ elasticsearch_cluster.cluster_initial_master_nodes }}
+{% endif %}
+
+xpack.security.enabled: true

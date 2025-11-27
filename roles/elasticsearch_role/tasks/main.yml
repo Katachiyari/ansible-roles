@@ -1,0 +1,60 @@
+---
+- name: Ajouter clé GPG Elasticsearch
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Ajouter dépôt Elasticsearch (Debian)
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Installer Elasticsearch
+  package:
+    name: "elasticsearch={{ elasticsearch_version }}"
+    state: present
+  become: yes
+
+- name: Créer répertoires data/logs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: '0755'
+  loop:
+    - "{{ elasticsearch_paths.data }}"
+    - "{{ elasticsearch_paths.logs }}"
+  become: yes
+
+- name: Déployer configuration Elasticsearch
+  template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    mode: '0660'
+  notify: Restart Elasticsearch
+  become: yes
+
+- name: Déployer configuration JVM
+  template:
+    src: jvm.options.j2
+    dest: /etc/elasticsearch/jvm.options
+    owner: root
+    group: elasticsearch
+    mode: '0660'
+  notify: Restart Elasticsearch
+  become: yes
+
+- name: Activer et démarrer Elasticsearch
+  service:
+    name: elasticsearch
+    state: started
+    enabled: "{{ elasticsearch_enabled }}"
+  become: yes
