@@ -10,6 +10,43 @@ Gestion des états : Utilisation exclusive des handlers pour les redémarrages d
 
 Sécurité et Permissions : Définition explicite des owner, group et mode lors de la création de fichiers ou dossiers.
 
+Organisation du code :
+
+    Utilisez une structure de répertoires claire et suivez les conventions de nommage pour les variables, playbooks et rôles.
+
+
+Factorisez le code en utilisant des rôles et des collections pour éviter la répétition (principe DRY - Don't Repeat Yourself).
+
+​
+Stockez vos projets Ansible dans un système de contrôle de version comme Git.
+
+    ​
+Gestion des variables :
+
+    Séparez les variables de la logique en utilisant group_vars et host_vars.
+
+​
+Utilisez des inventaires distincts pour chaque environnement (développement, production) afin de les isoler.
+
+    ​
+Sécurité renforcée :
+
+    Gérez les informations sensibles (mots de passe, clés API) avec Ansible Vault ou un autre système de gestion des secrets.
+
+​
+Limitez l'élévation des privilèges (become: true) aux tâches qui en ont absolument besoin.
+
+    ​
+Fiabilité et Tests :
+
+    Évitez d'utiliser la version latest pour les paquets ou les sources Git. Spécifiez des versions explicites pour garantir la prévisibilité des déploiements.
+
+​
+Utilisez l'instruction failed_when pour un contrôle précis des conditions d'échec d'une tâche, plutôt que ignore_errors.
+
+
+Intégrez ansible-lint dans des hooks de pre-commit ou dans votre pipeline CI/CD pour une validation automatique du code.
+
 1. Système & Base (L'essentiel)
     Ces rôles sont présents dans presque tous les playbooks de base ("common").
 
