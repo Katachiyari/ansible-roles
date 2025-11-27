@@ -1,0 +1,58 @@
+---
+- name: Installer openssh-server
+  package:
+    name: openssh-server
+    state: present
+    update_cache: yes
+  when: openssh_install
+  become: yes
+
+- name: Créer les utilisateurs SSH spécifiés
+  user:
+    name: "{{ item.username }}"
+    shell: /bin/bash
+    groups: "{{ item.groups | default(['sudo']) }}"
+    create_home: yes
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ ssh_users }}"
+  become: yes
+
+- name: Créer les répertoires .ssh pour chaque utilisateur
+  file:
+    path: "{{ item.username }}/.ssh"
+    state: directory
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
+    mode: '0700'
+  loop: "{{ ssh_users }}"
+  become: yes
+
+- name: Déployer les clés SSH autorisées pour chaque utilisateur
+  authorized_key:
+    user: "{{ item.username }}"
+    key: "{{ subitem }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ ssh_users }}"
+  loop_control:
+    loop_var: subitem
+  when: item.authorized_keys is defined
+  become: yes
+
+- name: Déployer la configuration SSHD personnalisée
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: '0600'
+    backup: yes
+  notify: Restart SSH
+  when: sshd_config | length > 0
+  become: yes
+
+- name: Activer et démarrer le service SSH
+  service:
+    name: ssh
+    state: started
+    enabled: yes
+  become: yes

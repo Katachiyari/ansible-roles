@@ -1,0 +1,79 @@
+---
+- name: Créer utilisateur système Vault
+  user:
+    name: vault
+    system: yes
+    shell: /bin/false
+    home: /opt/vault
+    create_home: yes
+  become: yes
+
+- name: Créer répertoires Vault
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: vault
+    group: vault
+    mode: '0755'
+  loop:
+    - "/opt/vault"
+    - "/opt/vault/data"
+    - "/etc/vault.d"
+  become: yes
+
+- name: Télécharger et installer Vault
+  unarchive:
+    src: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: "/usr/local/bin"
+    remote_src: yes
+    creates: "/usr/local/bin/vault"
+    mode: '0755'
+  become: yes
+
+- name: Déployer configuration Vault serveur
+  template:
+    src: vault-server.hcl.j2
+    dest: /etc/vault.d/vault-server.hcl
+    owner: vault
+    group: vault
+    mode: '0644'
+  when: vault_mode == "server"
+  notify: Restart Vault
+  become: yes
+
+- name: Déployer configuration Vault client
+  template:
+    src: vault-client.hcl.j2
+    dest: /etc/vault.d/vault-client.hcl
+    owner: vault
+    group: vault
+    mode: '0644'
+  when: vault_mode == "client"
+  notify: Restart Vault
+  become: yes
+
+- name: Déployer service systemd Vault
+  template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd
+  become: yes
+
+- name: Activer et démarrer Vault
+  systemd:
+    name: vault
+    state: started
+    enabled: "{{ vault_service_enabled }}"
+    daemon_reload: yes
+  become: yes
+
+- name: Stocker l'adresse Vault server dans variable d'environnement (client)
+  lineinfile:
+    path: /etc/environment
+    regexp: '^VAULT_ADDR='
+    line: 'VAULT_ADDR={{ vault_server_addr }}'
+  when: vault_mode == "client"
+  become: yes

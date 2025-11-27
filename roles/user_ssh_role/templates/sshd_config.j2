@@ -1,0 +1,10 @@
+# Configuration SSHD gérée par Ansible
+
+{% for key, value in sshd_config.items() %}
+{{ key }} {{ value }}
+{% endfor %}
+
+# Directives additionnelles recommandées
+ClientAliveInterval 300
+ClientAliveCountMax 2
+UseDNS no

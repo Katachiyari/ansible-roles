@@ -1,0 +1,55 @@
+---
+- name: Installer les paquets AppArmor
+  apt:
+    name:
+      - apparmor
+      - apparmor-utils
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Activer le profil AppArmor au démarrage
+  lineinfile:
+    path: /etc/default/apparmor
+    regexp: '^ENABLED='
+    line: 'ENABLED={{ "1" if apparmor_config.enabled else "0" }}'
+  notify: Restart AppArmor
+  become: yes
+
+- name: Créer le répertoire des profils personnalisés
+  file:
+    path: /etc/apparmor.d/custom
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: yes
+
+- name: Déployer les profils AppArmor personnalisés
+  template:
+    src: "{{ item.template }}"
+    dest: "/etc/apparmor.d/custom/{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ apparmor_profiles }}"
+  notify: Reload AppArmor
+  become: yes
+
+- name: Activer les profils AppArmor déployés
+  command: "aa-{{ item.mode }} {{ item.name }} || true"
+  loop: "{{ apparmor_profiles }}"
+  become: yes
+
+- name: Activer les profils pour services protégés
+  command: "aa-enforce /etc/apparmor.d/usr.sbin.{{ item }}"
+  loop: "{{ apparmor_protect_services }}"
+  ignore_errors: yes
+  become: yes
+
+- name: Activer et démarrer AppArmor
+  service:
+    name: apparmor
+    state: started
+    enabled: "{{ apparmor_config.enabled }}"
+  become: yes

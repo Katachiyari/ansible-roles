@@ -1,0 +1,16 @@
+---
+# Nom du runtime container à installer ('containerd' ou autre)
+container_runtime_name: "containerd"
+
+# Packages à installer par runtime et OS
+containerd_packages_debian:
+  - containerd
+
+containerd_packages_redhat:
+  - containerd.io
+
+# Configuration du démon containerd (optionnel, dict)
+containerd_config: {}
+
+# Activer et démarrer le service runtime
+container_runtime_service_enabled: true

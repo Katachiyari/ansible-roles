@@ -1,0 +1,85 @@
+---
+- name: Déterminer le gestionnaire de paquets
+  set_fact:
+    docker_pkg_mgr: "{{ 'apt' if ansible_os_family == 'Debian' else 'yum' }}"
+
+- name: Installer les dépendances Docker (Debian)
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Installer les dépendances Docker (RedHat)
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+  when: ansible_os_family == "RedHat"
+  become: yes
+
+- name: Ajouter la clé GPG Docker officielle (Debian)
+  apt_key:
+    url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+    state: present
+  when: docker_install_official_repo and ansible_os_family == "Debian"
+  become: yes
+
+- name: Ajouter le dépôt Docker officiel (Debian)
+  apt_repository:
+    repo: "deb [arch={{ ansible_architecture }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} stable"
+    state: present
+    update_cache: yes
+  when: docker_install_official_repo and ansible_os_family == "Debian"
+  become: yes
+
+- name: Ajouter le dépôt Docker officiel (RedHat)
+  yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable
+    baseurl: https://download.docker.com/linux/{{ ansible_distribution | lower }}
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+  when: docker_install_official_repo and ansible_os_family == "RedHat"
+  become: yes
+
+- name: Installer les paquets Docker
+  package:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer le fichier de configuration Docker daemon
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+  when: docker_daemon_config | length > 0
+  notify: Restart Docker
+  become: yes
+
+- name: Ajouter l'utilisateur au groupe docker
+  user:
+    name: "{{ docker_user }}"
+    groups: docker
+    append: yes
+  when: docker_user != ""
+  become: yes
+
+- name: Activer et démarrer le service Docker
+  service:
+    name: docker
+    state: started
+    enabled: "{{ docker_service_enabled }}"
+  become: yes

@@ -1,0 +1,20 @@
+---
+# Liste des utilisateurs et leurs clés SSH à déployer
+ssh_users: []
+
+# Exemple de format :
+# - username: "deploy_user"
+#   authorized_keys:
+#     - "ssh-rsa AAAAB3NzaC1yc2E... user@host"
+#     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5... user@host"
+#   ssh_key_file: "~/.ssh/id_rsa.pub"
+#   state: "present"
+
+# Configuration SSHD personnalisée (optionnel)
+sshd_config:
+  PermitRootLogin: "no"
+  PasswordAuthentication: "no"
+  PubkeyAuthentication: "yes"
+
+# Installer openssh-server
+openssh_install: true

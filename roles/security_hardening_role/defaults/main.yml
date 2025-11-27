@@ -1,0 +1,36 @@
+---
+# Niveau de hardening : 'level1' (CIS Basic) ou 'level2' (CIS Strict)
+hardening_level: "level1"
+
+# Configurations sysctl de sécurité
+sysctl_security:
+  kernel.kptr_restrict: "1"
+  kernel.dmesg_restrict: "1"
+  kernel.printk: "3 3 3 3"
+  net.ipv4.conf.all.accept_redirects: "0"
+  net.ipv4.conf.default.accept_redirects: "0"
+  net.ipv4.conf.all.send_redirects: "0"
+  net.ipv4.conf.all.rp_filter: "1"
+  fs.protected_symlinks: "1"
+  fs.protected_hardlinks: "1"
+
+# Configuration PAM
+pam_config:
+  password_auth: "sufficient"
+  password_quality: "requisite"
+
+# Configuration sudoers
+sudoers_config:
+  requiretty: "Defaults requiretty"
+  timestamp_timeout: "Defaults timestamp_timeout=5"
+
+# Configuration limits
+limits_config:
+  nofile: "4096"
+  nproc: "4096"
+
+# Désactiver services inutiles
+disable_services:
+  - avahi-daemon
+  - cups
+  - bluetooth

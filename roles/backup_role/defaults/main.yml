@@ -1,0 +1,24 @@
+---
+# Répertoire de destination des sauvegardes
+backup_dest: "/var/backups"
+
+# Liste des chemins à sauvegarder (fichiers/répertoires)
+backup_sources: []
+
+# Nom de la sauvegarde (préfixe)
+backup_name: "daily-backup"
+
+# Rotation des sauvegardes (nombre de versions à conserver)
+backup_retention_days: 7
+
+# Compression (gzip, bzip2, xz)
+backup_compression: "gzip"
+
+# Inclure les bases de données MariaDB (booléen)
+backup_mariadb: false
+backup_mariadb_root_password: ""
+
+# Script de sauvegarde automatique via cron (booléen)
+backup_cron_enable: false
+backup_cron_hour: 2
+backup_cron_minute: 0

@@ -1,0 +1,53 @@
+---
+- name: Créer le répertoire de destination des sauvegardes
+  file:
+    path: "{{ backup_dest }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: yes
+
+- name: Sauvegarder les sources de fichiers spécifiées
+  archive:
+    path: "{{ item }}"
+    dest: "{{ backup_dest }}/{{ backup_name }}-{{ ansible_date_time.date }}.{{ backup_compression }}"
+    format: {{ backup_compression }}
+  loop: "{{ backup_sources }}"
+  when: backup_sources | length > 0
+  become: yes
+
+- name: Sauvegarder MariaDB si activé
+  mysql_db:
+    name: all
+    state: dump
+    dest: "{{ backup_dest }}/{{ backup_name }}-mariadb-{{ ansible_date_time.date }}.sql.gz"
+    login_user: root
+    login_password: "{{ backup_mariadb_root_password }}"
+  when: backup_mariadb and backup_mariadb_root_password != ""
+  become: yes
+
+- name: Nettoyer les anciennes sauvegardes (rotation)
+  find:
+    paths: "{{ backup_dest }}"
+    patterns: "{{ backup_name }}*.{{ backup_compression }}"
+    age: "{{ backup_retention_days }}d"
+  register: old_backups
+
+- name: Supprimer les sauvegardes expirées
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_backups.files }}"
+  become: yes
+
+- name: Déployer script cron de sauvegarde automatique
+  template:
+    src: backup-cron.j2
+    dest: /etc/cron.d/ansible-backup-{{ backup_name }}
+    owner: root
+    group: root
+    mode: '0644'
+  when: backup_cron_enable
+  notify: Restart Cron
+  become: yes

@@ -1,0 +1,6 @@
+# CIS Security Hardening - Sysctl ({{ hardening_level }})
+# Géré par Ansible
+
+{% for key, value in sysctl_security.items() %}
+{{ key }} = {{ value }}
+{% endfor %}

@@ -1,0 +1,30 @@
+# Docker Compose stack gérée par Ansible
+version: '3.8'
+
+services:
+{% for service_name, service_config in compose_services.items() %}
+  {{ service_name }}:
+    {% if service_config.image is defined %}
+    image: {{ service_config.image }}
+    {% endif %}
+    {% if service_config.build is defined %}
+    build: {{ service_config.build | to_yaml }}
+    {% endif %}
+    {% if service_config.ports is defined %}
+    ports:
+      {{ service_config.ports | to_yaml }}
+    {% endif %}
+    {% if service_config.environment is defined %}
+    environment:
+      {{ service_config.environment | to_yaml }}
+    {% endif %}
+    {% if service_config.volumes is defined %}
+    volumes:
+      {{ service_config.volumes | to_yaml }}
+    {% endif %}
+    {% if service_config.depends_on is defined %}
+    depends_on:
+      {{ service_config.depends_on | to_yaml }}
+    {% endif %}
+    restart: unless-stopped
+{% endfor %}

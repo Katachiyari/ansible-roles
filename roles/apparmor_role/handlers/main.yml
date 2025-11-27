@@ -1,0 +1,10 @@
+---
+- name: Reload AppArmor
+  command: apparmor_parser -r /etc/apparmor.d/*
+  become: yes
+
+- name: Restart AppArmor
+  service:
+    name: apparmor
+    state: restarted
+  become: yes

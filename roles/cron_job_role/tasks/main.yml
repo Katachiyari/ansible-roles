@@ -1,0 +1,33 @@
+---
+- name: Installer le service cron si demandé
+  package:
+    name: cron
+    state: present
+  when: cron_install
+  become: yes
+
+- name: Créer le répertoire pour les crontabs personnalisés
+  file:
+    path: "{{ cron_file | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: yes
+
+- name: Déployer le fichier crontab avec les tâches planifiées
+  template:
+    src: crontab.j2
+    dest: "{{ cron_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Cron
+  become: yes
+
+- name: Activer et démarrer le service cron
+  service:
+    name: cron
+    state: started
+    enabled: yes
+  become: yes

@@ -1,0 +1,40 @@
+---
+# Nom de la stack Docker Compose
+compose_project_name: "app"
+
+# Version Docker Compose à utiliser
+compose_version: "v2.24.0"
+
+# Contenu du fichier docker-compose.yml (obligatoire)
+compose_services: {}
+
+# Exemple :
+# compose_services:
+#   web:
+#     image: nginx:alpine
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - app
+#   app:
+#     image: myapp:latest
+#     environment:
+#       - DB_HOST=db
+#     depends_on:
+#       - db
+#   db:
+#     image: mariadb:10.6
+#     environment:
+#       MYSQL_ROOT_PASSWORD: secret
+
+# Répertoire de déploiement
+compose_dir: "/opt/docker/{{ compose_project_name }}"
+
+# Fichier .env (optionnel)
+compose_env: {}
+
+# Pull images avant up (booléen)
+compose_pull: true
+
+# Activer au démarrage système
+compose_enabled: true

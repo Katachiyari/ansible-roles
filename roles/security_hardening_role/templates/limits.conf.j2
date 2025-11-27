@@ -1,0 +1,7 @@
+# System limits hardening
+* soft nofile {{ limits_config.nofile }}
+* hard nofile {{ limits_config.nofile }}
+* soft nproc {{ limits_config.nproc }}
+* hard nproc {{ limits_config.nproc }}
+root soft nofile {{ limits_config.nofile }}
+root hard nofile {{ limits_config.nofile }}

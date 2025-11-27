@@ -1,0 +1,15 @@
+# Configuration Fail2Ban gérée par Ansible
+[DEFAULT]
+bantime  = {{ fail2ban_global.bantime }}
+findtime = {{ fail2ban_global.findtime }}
+maxretry = {{ fail2ban_global.maxretry }}
+
+{% for jail in fail2ban_jails %}
+[{{ jail.name }}]
+enabled  = {{ jail.enabled | lower }}
+port     = {{ jail.port | default('0:65535') }}
+filter   = {{ jail.filter }}
+logpath  = {{ jail.logpath }}
+maxretry = {{ jail.maxretry | default(fail2ban_global.maxretry) }}
+bantime  = {{ jail.bantime | default(fail2ban_global.bantime) }}
+{% endfor %}

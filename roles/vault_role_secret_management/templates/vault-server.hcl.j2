@@ -1,0 +1,14 @@
+# Configuration Vault serveur gérée par Ansible
+storage "file" {
+  path = "{{ vault_server_config.storage.path }}"
+}
+
+listener "tcp" {
+  address     = "{{ vault_server_config.listener.address }}"
+  tls_disable = {{ vault_server_config.listener.tls_disable }}
+}
+
+api_addr = "{{ vault_server_config.api_addr }}"
+cluster_addr = "{{ vault_server_config.cluster_addr }}"
+
+ui = true

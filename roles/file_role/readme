@@ -1,12 +1,10 @@
 ---
-- name: Gérer divers types de fichiers sur les serveurs Debian
+- name: Gérer un fichier, répertoire ou lien symbolique sur un hôte
   hosts: all
   become: yes
 
-  tasks:
-    - name: Créer un répertoire
-      include_role:
-        name: file_manage
+  roles:
+    - role: file_role
       vars:
         file_path: "/var/www/html"
         file_state: "directory"
@@ -14,29 +12,5 @@
         file_group: "www-data"
         file_mode: "0755"
 
-    - name: Créer un fichier vide
-      include_role:
-        name: file_manage
-      vars:
-        file_path: "/tmp/testfile"
-        file_state: "file"
-        file_owner: "root"
-        file_group: "root"
-        file_mode: "0644"
-
-    - name: Créer un lien symbolique
-      include_role:
-        name: file_manage
-      vars:
-        file_path: "/usr/local/bin/myapp"
-        file_state: "link"
-        file_src: "/opt/myapp/bin/myapp"
-        file_owner: "root"
-        file_group: "root"
-
-    - name: Supprimer un fichier ou dossier
-      include_role:
-        name: file_manage
-      vars:
-        file_path: "/tmp/oldfile"
-        file_state: "absent"
+# Ce rôle crée, modifie ou supprime des fichiers, répertoires ou liens sur le système distant.
+# Il permet de définir le chemin, l’état (présent/absent), le propriétaire, le groupe et les permissions.

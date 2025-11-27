@@ -1,0 +1,18 @@
+---
+- name: Apply sysctl
+  command: sysctl --system
+  become: yes
+
+- name: Restart SSH
+  service:
+    name: ssh
+    state: restarted
+  become: yes
+
+- name: Restart services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - ssh
+  become: yes

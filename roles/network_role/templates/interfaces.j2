@@ -1,0 +1,15 @@
+# Interfaces réseau générées par Ansible
+
+{% for iface in network_interfaces %}
+auto {{ iface.name }}
+iface {{ iface.name }} inet static
+  address {{ iface.ip }}
+  netmask {{ iface.netmask }}
+  {% if iface.gateway is defined and iface.gateway %}
+  gateway {{ iface.gateway }}
+  {% endif %}
+  {% if iface.dns_servers is defined and iface.dns_servers %}
+  dns-nameservers {{ iface.dns_servers | join(' ') }}
+  {% endif %}
+
+{% endfor %}

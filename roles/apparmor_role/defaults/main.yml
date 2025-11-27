@@ -1,0 +1,24 @@
+---
+# Profils AppArmor à déployer
+apparmor_profiles: []
+
+# Exemple de format :
+# - name: "usr.sbin.apache2"
+#   mode: "enforce"
+#   template: "usr.sbin.apache2.j2"
+#   service: "apache2"
+
+# Configuration globale AppArmor
+apparmor_config:
+  enabled: true
+  mode: "enforce"
+
+# Services à protéger (active profils automatiquement)
+apparmor_protect_services:
+  - apache2
+  - mysql
+  - postfix
+  - sshd
+
+# Mode par défaut pour profils non spécifiés
+apparmor_default_mode: "complain"

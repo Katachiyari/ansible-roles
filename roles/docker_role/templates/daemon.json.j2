@@ -1,0 +1,10 @@
+{
+{% for key, value in docker_daemon_config.items() %}
+  "{{ key }}": {{ value | to_json }},
+{% endfor %}
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}

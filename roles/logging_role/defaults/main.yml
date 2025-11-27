@@ -1,0 +1,21 @@
+---
+# Serveur de logs distant (optionnel, vide = logs locaux uniquement)
+logging_remote_server: ""
+
+# Port de destination pour les logs distants
+logging_remote_port: 514
+
+# Rotation des logs (jours)
+logrotate_retention_days: 30
+
+# Paquets à installer selon OS
+logging_packages_debian:
+  - rsyslog
+  - logrotate
+
+logging_packages_redhat:
+  - rsyslog
+  - logrotate
+
+# Activer les services de logging
+logging_services_enabled: true

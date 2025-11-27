@@ -1,0 +1,8 @@
+---
+# Versions des outils Kubernetes
+kubectl_version: "v1.27.3"
+helm_version: "v3.12.1"
+k9s_version: "v0.27.4"
+
+# Répertoire d'installation des binaires
+kubernetes_bin_dir: "/usr/local/bin"

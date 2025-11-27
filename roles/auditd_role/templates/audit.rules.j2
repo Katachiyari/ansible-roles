@@ -1,0 +1,10 @@
+# Règles d'audit gérées par Ansible - {{ ansible_date_time.date }}
+# Ne pas modifier manuellement
+
+{% for rule in audit_rules %}
+{{ rule }}
+{% endfor %}
+
+# Clés d'audit pour recherche facilitée
+-a always,exit -F arch=b64 -S openat,o_creat -F auid>=1000 -F auid!=unset -k file_create
+-w /etc/sudoers -p wa -k sudoers_changes

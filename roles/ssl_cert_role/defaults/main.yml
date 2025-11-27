@@ -1,0 +1,21 @@
+---
+# Liste des domaines pour lesquels obtenir des certificats
+ssl_domains: []
+
+# Email pour notifications Let's Encrypt (obligatoire)
+ssl_email: ""
+
+# Type de challenge : 'http-01' (webroot) ou 'dns-01'
+ssl_challenge: "http-01"
+
+# Chemin webroot pour challenge HTTP (si http-01)
+ssl_webroot: "/var/www/html"
+
+# Serveur web à redémarrer après renouvellement (ex: apache2, nginx)
+ssl_webserver: ""
+
+# Staging mode pour tests (évite les limites de taux)
+ssl_staging: false
+
+# Auto-renouvellement via systemd timer
+ssl_auto_renew: true

@@ -1,0 +1,16 @@
+# Configuration Prometheus gérée par Ansible
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+{% for target_group in prometheus_targets %}
+  - job_name: '{{ target_group.labels.job }}'
+    static_configs:
+      - targets: {{ target_group.targets | to_json }}
+    {% if target_group.labels %}
+    labels:
+    {% for key, value in target_group.labels.items() %}
+      {{ key }}: '{{ value }}'
+    {% endfor %}
+    {% endif %}
+{% endfor %}

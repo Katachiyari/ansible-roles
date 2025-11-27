@@ -1,0 +1,22 @@
+---
+# Liste des interfaces réseau à configurer (type dictionnaire)
+# Exemple minimal :
+# network_interfaces:
+#   - name: eth0
+#     state: up
+#     type: ethernet
+#     ip: "192.168.1.10"
+#     netmask: "255.255.255.0"
+#     gateway: "192.168.1.1"
+#     dns_servers: ["8.8.8.8", "8.8.4.4"]
+#     vlan_id: null
+#     bond_opts: null  # dict, ex: mode=active-backup
+
+network_interfaces: []
+
+# Gestionnaire réseau utilisé : 'network_manager' ou 'network_service'
+network_manager_use: false
+
+# Nom du service réseau à redémarrer (varie selon distrib)
+network_service_name_debian: networking
+network_service_name_redhat: network

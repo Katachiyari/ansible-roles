@@ -1,0 +1,15 @@
+---
+- name: Restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+  become: yes
+
+- name: Restart journald
+  systemd:
+    daemon_reload: yes
+  become: yes
+
+- name: Restart logrotate
+  command: logrotate -f /etc/logrotate.conf
+  become: yes

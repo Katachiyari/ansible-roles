@@ -1,0 +1,25 @@
+---
+# Mode Vault : 'server' ou 'client'
+vault_mode: "client"
+
+# Version Vault à installer
+vault_version: "1.15.0"
+
+# Configuration Vault serveur
+vault_server_config:
+  storage "file":
+    path: "/opt/vault/data"
+  listener "tcp":
+    address: "0.0.0.0:8200"
+    tls_disable: 1
+  api_addr: "http://127.0.0.1:8200"
+  cluster_addr: "https://127.0.0.1:8201"
+
+# Adresse Vault server pour clients
+vault_server_addr: "http://vault-server:8200"
+
+# Token Vault initial (généré automatiquement pour dev)
+vault_root_token: ""
+
+# Activer Vault au démarrage système
+vault_service_enabled: true

@@ -1,0 +1,2 @@
+# Sauvegarde automatique gérée par Ansible - {{ backup_name }}
+{{ backup_cron_minute }} {{ backup_cron_hour }} * * * root ansible-playbook /root/backup-playbook.yml

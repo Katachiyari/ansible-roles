@@ -1,0 +1,77 @@
+---
+- name: Vérifier que Docker est installé
+  package_facts:
+    manager: auto
+  register: package_facts
+
+- name: Installer Docker si absent
+  include_role:
+    name: docker_role
+  when: "'docker' not in package_facts.ansible_facts.packages"
+
+- name: Installer Docker Compose plugin
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ compose_version }}/docker-compose-linux-x86_64"
+    dest: /usr/local/lib/docker/cli-plugins/docker-compose
+    mode: '0755'
+  become: yes
+
+- name: Créer le répertoire de déploiement Docker Compose
+  file:
+    path: "{{ compose_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  become: yes
+
+- name: Déployer le fichier docker-compose.yml
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ compose_dir }}/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+  notify: Restart Docker Compose
+  become: yes
+
+- name: Déployer le fichier .env si défini
+  copy:
+    content: |
+      {% for key, value in compose_env.items() %}
+      {{ key }}={{ value }}
+      {% endfor %}
+    dest: "{{ compose_dir }}/.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+  when: compose_env | length > 0
+  notify: Restart Docker Compose
+  become: yes
+
+- name: Créer service systemd pour Docker Compose
+  template:
+    src: docker-compose.service.j2
+    dest: "/etc/systemd/system/docker-compose-{{ compose_project_name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd
+  become: yes
+
+- name: Déployer la stack Docker Compose
+  docker_compose:
+    project_src: "{{ compose_dir }}"
+    state: present
+    pull: "{{ compose_pull }}"
+    recreate: always
+  become: yes
+  register: compose_result
+
+- name: Activer le service systemd Docker Compose
+  systemd:
+    name: "docker-compose-{{ compose_project_name }}"
+    enabled: "{{ compose_enabled }}"
+    state: "{{ 'started' if compose_result.changed else 'started' }}"
+    daemon_reload: yes
+  become: yes

@@ -1,0 +1,57 @@
+---
+- name: Vérifier que l'email et les domaines sont renseignés
+  fail:
+    msg: "Les variables 'ssl_email' et 'ssl_domains' sont obligatoires."
+  when: ssl_email == "" or ssl_domains | length == 0
+
+- name: Installer les paquets Certbot
+  package:
+    name:
+      - certbot
+      {% if ssl_challenge == "dns-01" %}
+      - python3-certbot-dns-{{ ansible_os_family | lower }}
+      {% endif %}
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer le répertoire webroot pour challenge HTTP
+  file:
+    path: "{{ ssl_webroot }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: ssl_challenge == "http-01"
+  become: yes
+
+- name: Obtenir ou renouveler les certificats SSL
+  certbot:
+    name: "{{ item }}"
+    email: "{{ ssl_email }}"
+    webroot: "{{ ssl_webroot if ssl_challenge == 'http-01' else omit }}"
+    webroot_path: "{{ ssl_webroot if ssl_challenge == 'http-01' else omit }}"
+    test_cert: "{{ ssl_staging }}"
+    deploy_hook: "systemctl reload {{ ssl_webserver }}" if ssl_webserver != "" else omit
+    state: present
+  loop: "{{ ssl_domains }}"
+  become: yes
+
+- name: Configurer l'auto-renouvellement systemd timer
+  template:
+    src: certbot-renew.timer.j2
+    dest: /etc/systemd/system/certbot-renew.timer
+    owner: root
+    group: root
+    mode: '0644'
+  when: ssl_auto_renew
+  notify: Reload systemd
+  become: yes
+
+- name: Activer l'auto-renouvellement Certbot
+  systemd:
+    name: certbot-renew.timer
+    enabled: "{{ ssl_auto_renew }}"
+    state: started
+  when: ssl_auto_renew
+  become: yes

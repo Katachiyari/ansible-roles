@@ -1,0 +1,14 @@
+# Configuration rsyslog gérée par Ansible
+
+# Logs locaux
+*.*;auth,authpriv.none          -/var/log/syslog
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          -/var/log/syslog
+
+{% if logging_remote_server %}
+# Envoi vers serveur distant
+*.* @{{ logging_remote_server }}:{{ logging_remote_port }}
+{% endif %}
+
+# Rotation
+$WorkDirectory /var/spool/rsyslog

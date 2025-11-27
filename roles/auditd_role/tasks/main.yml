@@ -1,0 +1,51 @@
+---
+- name: Déterminer les paquets audit selon l'OS
+  set_fact:
+    audit_packages: "{{ ['auditd', 'audispd-plugins'] if ansible_os_family == 'RedHat' else ['auditd'] }}"
+
+- name: Installer les paquets auditd
+  package:
+    name: "{{ audit_packages }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer le répertoire pour les règles d'audit
+  file:
+    path: /etc/audit/rules.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: yes
+
+- name: Déployer les règles d'audit personnalisées
+  template:
+    src: audit.rules.j2
+    dest: /etc/audit/rules.d/ansible-audit.rules
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Reload audit rules
+  become: yes
+
+- name: Déployer la configuration auditd
+  template:
+    src: auditd.conf.j2
+    dest: /etc/audit/auditd.conf
+    owner: root
+    group: root
+    mode: '0640'
+  notify: Restart auditd
+  become: yes
+
+- name: Activer et démarrer le service auditd
+  service:
+    name: auditd
+    state: started
+    enabled: "{{ auditd_enabled }}"
+  become: yes
+
+- name: Appliquer immédiatement les règles d'audit
+  command: augenrules --load
+  become: yes

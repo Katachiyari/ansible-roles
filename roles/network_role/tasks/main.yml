@@ -1,0 +1,39 @@
+---
+- name: Vérifier que la liste des interfaces est renseignée
+  fail:
+    msg: "La variable 'network_interfaces' doit contenir au moins une interface."
+  when: network_interfaces | length == 0
+
+- name: Déterminer le service réseau à utiliser
+  set_fact:
+    network_service_name: >-
+      {{ network_service_name_debian if ansible_os_family == 'Debian' else network_service_name_redhat }}
+
+- name: Déployer configuration réseau sur Debian / Ubuntu
+  template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: '0644'
+  when: ansible_os_family == "Debian" and not network_manager_use
+  notify: Restart Networking
+  become: yes
+
+- name: Déployer configurations ifcfg sur RedHat / CentOS
+  template:
+    src: "ifcfg-{{ item.name }}.j2"
+    dest: "/etc/sysconfig/network-scripts/ifcfg-{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ network_interfaces }}"
+  when: ansible_os_family == "RedHat" and not network_manager_use
+  notify: Restart Networking
+  become: yes
+
+- name: Redémarrer le service réseau
+  service:
+    name: "{{ network_service_name }}"
+    state: restarted
+  become: yes

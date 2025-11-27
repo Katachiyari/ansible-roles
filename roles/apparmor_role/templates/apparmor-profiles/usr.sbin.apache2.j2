@@ -1,0 +1,19 @@
+#include <tunables/global>
+
+/usr/sbin/apache2 {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/web-server>
+  
+  capability dac_override,
+  capability dac_read_search,
+  capability net_bind_service,
+  capability sys_resource,
+
+  /etc/apache2/** r,
+  /var/log/apache2/ r,
+  /var/log/apache2/** rw,
+  /var/www/** r,
+  /usr/lib/apache2/** mr,
+  /usr/sbin/apache2 mr,
+}

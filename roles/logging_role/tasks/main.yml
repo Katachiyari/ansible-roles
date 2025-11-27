@@ -1,0 +1,49 @@
+---
+- name: Déterminer les paquets de logging selon l'OS
+  set_fact:
+    logging_packages: "{{ logging_packages_debian if ansible_os_family == 'Debian' else logging_packages_redhat }}"
+
+- name: Installer les paquets de logging
+  package:
+    name: "{{ logging_packages }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Déployer configuration rsyslog personnalisée
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart rsyslog
+  become: yes
+
+- name: Déployer configuration logrotate personnalisée
+  template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart logrotate
+  become: yes
+
+- name: Activer et démarrer les services de logging
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: "{{ logging_services_enabled }}"
+  loop:
+    - rsyslog
+  become: yes
+
+- name: Configurer journald pour rotation automatique (systemd)
+  lineinfile:
+    path: /etc/systemd/journald.conf
+    regexp: '^SystemMaxUse='
+    line: 'SystemMaxUse=100M'
+    backup: yes
+  notify: Restart journald
+  become: yes

@@ -1,0 +1,10 @@
+---
+- name: Reload audit rules
+  command: augenrules --load
+  become: yes
+
+- name: Restart auditd
+  service:
+    name: auditd
+    state: restarted
+  become: yes

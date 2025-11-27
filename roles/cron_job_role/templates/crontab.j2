@@ -1,0 +1,12 @@
+# Crontab géré par Ansible - {{ ansible_date_time.date }}
+# Ne pas modifier manuellement ce fichier
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+{% for job in cron_jobs %}
+{% if job.state == 'present' %}
+{{ job.minute | default('*') }} {{ job.hour | default('*') }} {{ job.day | default('*') }} {{ job.month | default('*') }} {{ job.weekday | default('*') }} {{ job.user | default(cron_user) }} {{ job.job }}
+# {{ job.name }}
+{% endif %}
+{% endfor %}

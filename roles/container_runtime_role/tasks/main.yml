@@ -1,0 +1,33 @@
+---
+- name: Déterminer la liste des paquets selon OS et runtime
+  set_fact:
+    container_runtime_packages: >-
+      {{
+        containerd_packages_debian if ansible_os_family == 'Debian' else
+        containerd_packages_redhat
+      }}
+
+- name: Installer les paquets du runtime containers
+  package:
+    name: "{{ container_runtime_packages }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Déployer la configuration containerd si fournie
+  copy:
+    content: "{{ containerd_config | to_nice_json }}"
+    dest: "/etc/containerd/config.toml"
+    owner: root
+    group: root
+    mode: '0644'
+  when: containerd_config | length > 0
+  notify: Restart containerd
+  become: yes
+
+- name: Activer et démarrer le service container runtime
+  service:
+    name: "{{ container_runtime_name }}"
+    enabled: "{{ container_runtime_service_enabled }}"
+    state: started
+  become: yes

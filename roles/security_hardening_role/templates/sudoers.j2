@@ -1,0 +1,10 @@
+# Sudoers hardening - {{ hardening_level }}
+# Géré par Ansible
+
+{% for key, value in sudoers_config.items() %}
+{{ value }}
+{% endfor %}
+
+# Logs sudo obligatoires
+Defaults log_output
+Defaults logfile="/var/log/sudo.log"

@@ -1,0 +1,25 @@
+---
+# Paquets Fail2Ban à installer
+fail2ban_packages:
+  - fail2ban
+
+# Jails personnalisées à configurer
+fail2ban_jails: []
+
+# Exemple de format :
+# - name: "sshd"
+#   enabled: true
+#   port: "ssh"
+#   filter: "sshd"
+#   logpath: "/var/log/auth.log"
+#   maxretry: 5
+#   bantime: 3600
+
+# Configuration globale Fail2Ban
+fail2ban_global:
+  bantime: 3600
+  findtime: 600
+  maxretry: 5
+
+# Activer Fail2Ban au démarrage système
+fail2ban_enabled: true

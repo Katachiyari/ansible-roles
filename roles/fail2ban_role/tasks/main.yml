@@ -1,0 +1,39 @@
+---
+- name: Installer les paquets Fail2Ban
+  apt:
+    name: "{{ fail2ban_packages }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer le répertoire de configuration Fail2Ban
+  file:
+    path: /etc/fail2ban
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: yes
+
+- name: Déployer la configuration jail.local personnalisée
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Fail2Ban
+  become: yes
+
+- name: Activer et démarrer le service Fail2Ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: "{{ fail2ban_enabled }}"
+  become: yes
+
+- name: Vérifier le statut des jails actives
+  command: fail2ban-client status
+  register: fail2ban_status
+  changed_when: false
+  become: yes

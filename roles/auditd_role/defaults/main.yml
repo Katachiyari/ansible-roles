@@ -1,0 +1,20 @@
+---
+# Règles d'audit à appliquer
+audit_rules:
+  - "-w /etc/passwd -p wa -k identity"
+  - "-w /etc/group -p wa -k identity"
+  - "-w /etc/shadow -p wa -k identity"
+  - "-a always,exit -F arch=b64 -S execve -k process_execution"
+  - "-w /bin -p x -k bin_exec"
+  - "-w /usr/bin -p x -k bin_exec"
+  - "-w /var/log -p wa -k log_changes"
+
+# Configuration auditd
+auditd_config:
+  log_file: "/var/log/audit/audit.log"
+  max_log_file: "100"
+  max_log_file_action: "ROTATE"
+  num_logs: "5"
+
+# Activer auditd au démarrage système
+auditd_enabled: true

@@ -1,0 +1,12 @@
+# Configuration logrotate gérée par Ansible
+weekly
+rotate {{ logrotate_retention_days }}
+missingok
+compress
+delaycompress
+notifempty
+create 640 root adm
+sharedscripts
+postrotate
+    /usr/lib/rsyslog/rsyslog-rotate
+endscript

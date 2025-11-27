@@ -1,0 +1,12 @@
+TYPE=Ethernet
+BOOTPROTO=none
+NAME={{ item.name }}
+DEVICE={{ item.name }}
+ONBOOT=yes
+IPADDR={{ item.ip }}
+NETMASK={{ item.netmask }}
+{% if item.gateway is defined and item.gateway %}
+GATEWAY={{ item.gateway }}
+{% endif %}
+DNS1={{ item.dns_servers[0] if item.dns_servers is defined and item.dns_servers|length > 0 else '' }}
+DNS2={{ item.dns_servers[1] if item.dns_servers is defined and item.dns_servers|length > 1 else '' }}

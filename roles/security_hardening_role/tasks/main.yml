@@ -1,0 +1,79 @@
+---
+- name: Déployer configuration sysctl de sécurité
+  template:
+    src: sysctl.conf.j2
+    dest: /etc/sysctl.d/99-security-hardening.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Apply sysctl
+  become: yes
+
+- name: Appliquer sysctl immédiatement
+  command: sysctl --system
+  become: yes
+
+- name: Configurer PAM password authentication
+  lineinfile:
+    path: /etc/pam.d/common-auth
+    regexp: '^\s*auth\s+\[success=1.*pam_unix.so.*'
+    line: 'auth {{ pam_config.password_auth }} pam_unix.so nullok_secure try_first_pass'
+  notify: Restart services
+  become: yes
+
+- name: Configurer qualité des mots de passe PAM
+  lineinfile:
+    path: /etc/pam.d/common-password
+    regexp: '^\s*password\s+requisite\s+pam_pwquality.so.*'
+    line: 'password {{ pam_config.password_quality }} pam_pwquality.so retry=3 minlen=12 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1'
+  notify: Restart services
+  become: yes
+
+- name: Déployer configuration sudoers sécurisée
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers.d/99-hardening
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  notify: Restart services
+  become: yes
+
+- name: Déployer configuration limits système
+  template:
+    src: limits.conf.j2
+    dest: /etc/security/limits.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart services
+  become: yes
+
+- name: Désactiver services inutiles/dangereux
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop: "{{ disable_services }}"
+  ignore_errors: yes
+  become: yes
+
+- name: Désactiver login root SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    backup: yes
+  notify: Restart SSH
+  become: yes
+
+- name: Installer outils de sécurité
+  package:
+    name:
+      - aide
+      - rkhunter
+      - lynis
+    state: present
+    update_cache: yes
+  become: yes

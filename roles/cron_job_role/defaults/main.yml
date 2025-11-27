@@ -1,0 +1,20 @@
+---
+# Liste des tâches cron à créer (obligatoire)
+cron_jobs: []
+
+# Exemple de format :
+# - name: "Backup quotidien"
+#   minute: "0"
+#   hour: "2"
+#   job: "/usr/local/bin/backup.sh"
+#   user: "root"
+#   state: "present"
+
+# Utilisateur par défaut pour les tâches cron
+cron_user: "root"
+
+# Chemin du fichier crontab généré
+cron_file: "/etc/cron.d/ansible-cron-jobs"
+
+# Installer le service cron si absent
+cron_install: true
