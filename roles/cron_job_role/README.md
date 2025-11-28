@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # 📖 README.md **con_job_role** – EXPLICATION DÉTAILLÉE
+=======
+# 📖 README.md **cron_job_role** – EXPLICATION DÉTAILLÉE
+>>>>>>> 893a5ea5c1a6c1e5e3dee1f999647e564e2735bf
 
 
 ## 🎯 Description
