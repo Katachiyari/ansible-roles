@@ -1,8 +1,5 @@
-# 📖 README.md **container_runtime_role** – EXPLICATION DÉTAILLÉE
+# 📖 **container_runtime_role**
 
-[
-[
-[
 
 ## 🎯 Description
 
