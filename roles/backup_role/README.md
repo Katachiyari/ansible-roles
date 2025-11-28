@@ -1,8 +1,5 @@
 # 📖 README.md **backup_role** - EXPLICATION DÉTAILLÉE
 
-[
-[
-[
 
 ## 🎯 Description
 

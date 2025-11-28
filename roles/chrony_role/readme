@@ -1,9 +1,5 @@
 # 📖 README.md **chrony_role** - EXPLICATION DÉTAILLÉE
 
-[
-[
-[
-
 ## 🎯 **Description**
 
 Rôle Ansible complet pour **installer et configurer Chrony**, le démon NTP moderne et performant de synchronisation horaire système. Remplace NTPd avec une précision supérieure, une consommation réseau réduite et un démarrage rapide.

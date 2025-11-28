@@ -1,8 +1,5 @@
 # 📖 README.md **auditd_role** - EXPLICATION DÉTAILLÉE
 
-[
-[
-[
 
 ## 🎯 Description
 
