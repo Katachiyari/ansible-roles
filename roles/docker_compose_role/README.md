@@ -1,17 +1,17 @@
-# 📖 README.md **docker_role** – EXPLICATION DÉTAILLÉE
+# 📖 README.md **docker_compose_role** – EXPLICATION DÉTAILLÉE
 
 
 ## 🎯 Description
 
-Rôle Ansible complet pour **installer et configurer Docker Engine** (CE/EE) sur Linux, avec gestion des dépôts, du daemon, des utilisateurs, de la sécurité et de la compatibilité avec les modules Ansible Docker.
+Rôle Ansible pour **déployer et gérer des applications Docker Compose** sur Linux. Permet de copier, templater, et lancer des fichiers `docker-compose.yml` sur n’importe quel serveur, avec gestion des fichiers de configuration, variables d’environnement et options avancées.
 
 **Fonctionnalités clés :**
 
-- ✅ Installation Docker CE/EE (officiel ou distribution)
-- ✅ Ajout des dépôts officiels + gestion clés GPG
-- ✅ Configuration du daemon (`daemon.json`)
-- ✅ Ajout d’utilisateurs au groupe `docker`
-- ✅ Support Docker Compose (plugin ou binaire)
+- ✅ Déploiement de fichiers `docker-compose.yml`
+- ✅ Templating avancé avec variables Ansible
+- ✅ Copie de fichiers de configuration et `.env`
+- ✅ Lancement et gestion des services Docker Compose
+- ✅ Support de la mise à jour et du redémarrage
 - ✅ Idempotence et compatibilité CI/CD
 
 ***
@@ -22,7 +22,7 @@ Rôle Ansible complet pour **installer et configurer Docker Engine** (CE/EE) sur
 | :-- | :-- |
 | Ansible | ≥ 2.10 |
 | OS | Debian 10+, Ubuntu 18.04+, RHEL/CentOS 8+ |
-| Python | ≥ 3.6 (pour modules Docker) |
+| Packages | Docker, Docker Compose (plugin ou binaire) |
 
 
 ***
@@ -31,61 +31,53 @@ Rôle Ansible complet pour **installer et configurer Docker Engine** (CE/EE) sur
 
 | Variable | Type | Défaut | Description |
 | :-- | :-- | :-- | :-- |
-| `docker_edition` | string | `"ce"` | `"ce"` (Community) ou `"ee"` (Enterprise) |
-| `docker_packages_state` | string | `"present"` | `"present"`, `"latest"`, `"absent"` |
-| `docker_users` | list | `[]` | Utilisateurs à ajouter au groupe `docker` |
-| `docker_daemon_options` | dict | `{}` | Options pour `/etc/docker/daemon.json` |
-| `docker_install_compose` | bool | `true` | Installer Docker Compose (plugin ou binaire) |
-| `docker_add_repo` | bool | `true` | Ajouter le dépôt Docker officiel |
-| `docker_service_manage` | bool | `true` | Gérer le service Docker |
+| `docker_compose_files` | list | `[]` | Liste des fichiers `docker-compose.yml` à déployer |
+| `docker_compose_base_dir` | str | `/opt/docker-compose` | Répertoire de base pour les déploiements |
+| `docker_compose_env_files` | list | `[]` | Fichiers `.env` à copier |
+| `docker_compose_configs` | list | `[]` | Fichiers de configuration à copier |
+| `docker_compose_options` | dict | `{}` | Options avancées pour `docker-compose up` |
+| `docker_compose_enabled` | bool | `true` | Activer/désactiver le déploiement |
 
 
 ***
 
 ## 💡 Exemple d’utilisation
 
-### Docker CE standard
+### Déploiement simple
 
 ```yaml
 ---
-- name: Installer Docker CE
-  hosts: docker_nodes
+- name: Déployer application Docker Compose
+  hosts: all
   become: yes
 
   roles:
-    - role: docker_role
+    - role: docker_compose_role
       vars:
-        docker_edition: "ce"
-        docker_users:
-          - "deploy"
-          - "ci"
-        docker_daemon_options:
-          storage-driver: "overlay2"
-          log-driver: "json-file"
-          log-opts:
-            max-size: "100m"
-            max-file: "3"
-        docker_install_compose: true
+        docker_compose_files:
+          - src: "docker-compose.yml"
+            dest: "/opt/docker-compose/myapp/docker-compose.yml"
+        docker_compose_env_files:
+          - src: "myapp.env"
+            dest: "/opt/docker-compose/myapp/.env"
+        docker_compose_configs:
+          - src: "config/nginx.conf"
+            dest: "/opt/docker-compose/myapp/config/nginx.conf"
+        docker_compose_options:
+          force_recreate: true
+          build: true
 ```
 
 
-### Docker EE (Enterprise)
+### Avancé (templating + variables)
 
 ```yaml
----
-- name: Installer Docker EE
-  hosts: prod_nodes
-  become: yes
-
-  roles:
-    - role: docker_role
-      vars:
-        docker_edition: "ee"
-        docker_users:
-          - "admin"
-        docker_daemon_options:
-          storage-driver: "overlay2"
-          live-restore: true
+        docker_compose_files:
+          - src: "templates/docker-compose.yml.j2"
+            dest: "/opt/docker-compose/myapp/docker-compose.yml"
+            vars:
+              app_version: "1.2.3"
+              db_host: "db.example.com"
 ```
 
 
@@ -93,30 +85,22 @@ Rôle Ansible complet pour **installer et configurer Docker Engine** (CE/EE) sur
 
 ## 🧪 Tests recommandés
 
-**Docker installé :**
+**Vérifier le déploiement :**
 
 ```bash
-systemctl status docker
-docker info
+ansible all -m shell -a "ls -la /opt/docker-compose/myapp/"
 ```
 
-**Utilisateurs dans le groupe docker :**
+**Vérifier les services :**
 
 ```bash
-getent group docker
+ansible all -m shell -a "docker-compose -f /opt/docker-compose/myapp/docker-compose.yml ps"
 ```
 
-**Test run container :**
+**Test idempotence :**
 
 ```bash
-docker run --rm hello-world
-```
-
-**Ansible / idempotence :**
-
-```bash
-ansible-playbook docker.yml
-ansible-playbook docker.yml --check
+ansible-playbook docker-compose.yml --check
 ```
 
 
@@ -124,25 +108,26 @@ ansible-playbook docker.yml --check
 
 ## 🔄 Idempotence
 
-- 1ère exécution : install + config + service = `changed`
-- Exécutions suivantes : **0 changed** si aucune variable modifiée
+- 1ère exécution : déploiement + lancement = `changed`
+- Exécutions suivantes : **0 changed** si aucune variable ou fichier modifié
 
 ***
 
 ## 📁 Structure du rôle
 
 ```text
-docker_role/
+docker_compose_role/
 ├── defaults/
-│   └── main.yml          # Variables par défaut (edition, options)
+│   └── main.yml          # Variables par défaut
 ├── tasks/
-│   ├── install.yml       # Installation Docker
-│   ├── config.yml        # Configuration daemon + users
-│   └── main.yml          # Inclusion selon variables
+│   ├── deploy.yml        # Déploiement fichiers
+│   ├── config.yml        # Copie configs/env
+│   ├── run.yml           # Lancement Docker Compose
+│   └── main.yml          # Inclusion des tâches
 ├── templates/
-│   └── daemon.json.j2   # Template daemon.json
+│   └── docker-compose.yml.j2  # Exemple template
 ├── handlers/
-│   └── main.yml          # Restart Docker
+│   └── main.yml          # Redémarrage si besoin
 ├── meta/
 │   └── main.yml          # Métadonnées Galaxy
 └── README.md             # Ce fichier
@@ -153,19 +138,18 @@ docker_role/
 
 ## 🚀 Avantages
 
-- Installation officielle Docker CE/EE
-- Configuration centralisée du daemon
-- Gestion des utilisateurs et des permissions
-- Support Docker Compose intégré
+- Déploiement centralisé d’applications Docker Compose
+- Templating avancé et variables dynamiques
+- Gestion complète des fichiers de config et d’environnement
 - Idempotence et logging structuré
-- Prêt pour orchestration Kubernetes ou Swarm
+- Prêt pour orchestration CI/CD
 
 ***
 
 ## 🤝 Contributing
 
-1. Fork → Modifier config → Test
-2. `molecule test` ✅
+1. Fork → Ajouter type de déploiement → Test
+2. `molecule test` obligatoire
 3. Pull Request avec tests
 
 ***
@@ -173,8 +157,8 @@ docker_role/
 ## 🆘 Support
 
 - ❓ Questions : GitHub Issues
-- 🐛 Bugs : `docker info` + logs
-- 🚀 Features : Ajout de nouveaux modules Docker
+- 🐛 Bugs : Sortie `docker-compose ps` + logs
+- 🚀 Features : Ajout de nouveaux templates ou options
 
 ***
 
@@ -184,26 +168,26 @@ MIT License - [LICENSE](LICENSE)
 
 ***
 
-**Rôle complet et sécurisé pour l’installation et la configuration de Docker Engine sur toute infrastructure Linux moderne.** 🐳🚀[^1][^5]
-<span style="display:none">[^2][^3][^4][^6][^7][^8][^9]</span>
+**Rôle complet et sécurisé pour le déploiement et la gestion d’applications Docker Compose sur toute infrastructure Linux moderne.** 🐳🚀[^1][^4]
+<span style="display:none">[^2][^3][^5][^6][^7][^8][^9]</span>
 
 <div align="center">⁂</div>
 
-[^1]: https://github.com/geerlingguy/ansible-role-docker
+[^1]: https://galaxy.ansible.com/ui/repo/published/arillso/container/content/role/docker_compose/
 
-[^2]: https://docs.ansible.com/projects/ansible/latest/collections/community/docker/docsite/scenario_guide.html
+[^2]: https://aegis.outsilo.com/aegis/ansible-roles/docker-compose/-/blob/master/README.md
 
-[^3]: https://www.rubydoc.info/gems/ansible-role/1.1.0
+[^3]: https://docs.ansible.com/projects/ansible/latest/collections/community/docker/docker_compose_module.html
 
-[^4]: https://gitlab.com/ansible-roles543108/docker-role
+[^4]: https://git.hamburg.ccc.de/CCCHH/ansible-infra/src/commit/5f6000adcadb0be3dc917f2b5aaf55b15a7f5d9d/roles/docker_compose/README.md?display=source
 
-[^5]: https://spacelift.io/blog/ansible-docker
+[^5]: https://github.com/fccn/ansible-docker-deploy
 
-[^6]: https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_reuse_roles.html
+[^6]: https://www.reddit.com/r/ansible/comments/12ua0tm/docker_compose_up/
 
-[^7]: https://gitlab.with.de/ansible/ansible-role-docker-container/-/tree/d731957588a8a24999cb774b4acc375e12762323
+[^7]: https://forum.ansible.com/t/good-practices-ansible-github-docker-compose/38292
 
-[^8]: https://git.idc.tarento.com/upsmf/sunbird-devops/-/blob/d2c9676d43d9d22ccb1efb3aaf38be385e8dd4f6/ansible/roles/docker-ce/README.md
+[^8]: https://git.hamburg.ccc.de/sophia/ansible-infra/src/commit/78837e45fe452aa1fe9a60b8c70d583f865980ed/playbooks/roles/docker_compose/README.md
 
-[^9]: https://gitlab.developers.cam.ac.uk/rcs/platforms/infrastructure/ansible-roles/ansible-role-prometheus/-/blob/e73501716a4cc7f33fb57c4a0757f256365b69ad/README.md
+[^9]: https://docs.ansible.com/projects/ansible/latest/collections/community/hashi_vault/docsite/contributor_guide.html
 

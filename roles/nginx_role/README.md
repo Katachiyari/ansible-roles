@@ -1,246 +1,169 @@
-📖 nginx_role - NGINX Server & Reverse Proxy
+# 📖 README.md **nginx_role** – EXPLICATION DÉTAILLÉE
 
-[
-[
-[
-🎯 Description
+## 🎯 Description
 
-Déploie NGINX haute performance (serveur web + reverse proxy) avec multi VirtualHosts, configuration optimisée multi-core, et support SSL prêt.
+Rôle Ansible complet pour **installer et configurer NGINX** (serveur web, reverse proxy) sur Linux, avec gestion des sites, des virtual hosts et de la sécurité.
 
-Fonctionnalités clés :
+**Fonctionnalités clés :**
 
-    ✅ Multi VirtualHosts (sites statiques + proxy)
+- ✅ Installation NGINX (stable/latest)
+- ✅ Configuration des sites (HTTP/HTTPS)
+- ✅ Gestion des virtual hosts et SSL
+- ✅ Idempotence et logging structuré
 
-    ✅ Worker processes auto (CPU cores)
+***
 
-    ✅ TCP tuning optimisé
+## 📋 Requirements
 
-    ✅ Proxy backends (Node.js, PHP-FPM, API)
+| Requirement | Version / Notes |
+| :-- | :-- |
+| Ansible | ≥ 2.10 |
+| OS | Debian 10+, Ubuntu 18.04+, RHEL 8+ |
+| Packages | nginx |
 
-    ✅ Idempotent (0 changed après 1ère exécution)
 
-📋 Requirements
-Requirement	Version	Notes
-Ansible	≥2.10	Testé 2.14+
-Python	≥3.8	
-OS	Debian 11+, Ubuntu 20.04+, RHEL 8+	
+***
 
-Dépendances externes : Aucune
-🛠️ Installation
+## ⚙️ Variables (defaults/main.yml)
 
-bash
-# Depuis Ansible Galaxy
-ansible-galaxy install user.nginx_role
+| Variable | Type | Défaut | Description |
+| :-- | :-- | :-- | :-- |
+| `nginx_version` | str | `"stable"` | Version NGINX |
+| `nginx_sites` | list | `[]` | Sites à configurer |
+| `nginx_ssl_enabled` | bool | `false` | Activer SSL |
+| `nginx_ssl_cert` | str | `""` | Certificat SSL |
+| `nginx_ssl_key` | str | `""` | Clé SSL |
 
-# Ou depuis Git
-ansible-galaxy install git+https://github.com/user/ansible-roles.git,v1.0.0,nginx_role
+**Structure site :**
 
-⚙️ Variables (defaults/main.yml)
-Obligatoires
-Variable	Type	Exemple	Description
-nginx_sites	list	[{name: "site1"}]	Liste des VirtualHosts
-Configuration NGINX (nginx_config)
-Variable	Défaut	Exemple	Description
-worker_processes	auto	4	Workers CPU
-worker_connections	1024	2048	Connexions/worker
-keepalive_timeout	65	30	Keepalive timeout
-Site configuration (nginx_sites[])
-Variable	Type	Défaut	Description
-name	str	-	Nom site (fichier config)
-server_name	str	{{ inventory_hostname }}	ServerName
-root	str	/var/www/{{ name }}	Document root
-ports	list	[80]	Ports d'écoute
-proxy_pass	str	null	Backend proxy
-extra_config	str	""	Config location personnalisée
+```yaml
+- name: "default"
+  server_name: "example.com"
+  root: "/var/www/html"
+  ssl: false
+```
 
-Exemple complet : Voir defaults/main.yml
-💡 Exemple d'utilisation
-Playbook minimal
 
-text
+***
+
+## 💡 Exemple d’utilisation
+
+### Site basique (HTTP)
+
+```yaml
 ---
-- name: Déployer NGINX simple
-  hosts: webservers
+- name: Installer NGINX basique
+  hosts: all
   become: yes
   roles:
     - role: nginx_role
       vars:
         nginx_sites:
           - name: "default"
-            server_name: "{{ inventory_hostname }}"
+            server_name: "example.com"
+            root: "/var/www/html"
+            ssl: false
+```
 
-Playbook avancé (multi-sites + proxy)
 
-text
----
-- name: NGINX Production (web + API proxy)
-  hosts: webservers
-  become: yes
-  vars:
-    nginx_sites:
-      - name: "example.com"
-        server_name: "example.com www.example.com"
-        root: "/var/www/example"
-        ports: ["80", "443"]
-      - name: "api.example.com"
-        server_name: "api.example.com"
-        ports: ["80"]
-        proxy_pass: "http://127.0.0.1:3000"
-        extra_config: |
-          location /health {
-            access_log off;
-            return 200 "healthy\n";
-          }
-    nginx_config:
-      worker_processes: "4"
-      worker_connections: "4096"
+### Avancé (HTTPS)
 
-  roles:
-    - role: nginx_role
+```yaml
+        nginx_sites:
+          - name: "secure"
+            server_name: "secure.example.com"
+            root: "/var/www/secure"
+            ssl: true
+            ssl_cert: "/etc/ssl/certs/example.com.crt"
+            ssl_key: "/etc/ssl/private/example.com.key"
+```
 
-🧪 Testing
-Vérification rapide
 
-bash
-# Services
-ansible-playbook site.yml -t "nginx_service"
+***
 
-# Syntaxe config
-ansible-playbook site.yml -t "nginx_test_config"
+## 🧪 Tests recommandés
 
-# Test complet
-ansible-playbook site.yml --check
+**Vérifier le service :**
 
-Tests Molecule (développeurs)
+```bash
+systemctl status nginx
+```
 
-bash
-# Tests locaux
-molecule test
+**Vérifier la configuration :**
 
-# Matrix OS
-molecule test -s default --parallel
+```bash
+nginx -t
+```
 
-Commandes de validation
+**Test idempotence :**
 
-bash
-# Statut service
-ansible webservers -m service_facts -a "name=nginx"
+```bash
+ansible-playbook nginx.yml --check
+```
 
-# Test syntaxe
-ansible webservers -m shell -a "nginx -t"
 
-# Test sites
-ansible webservers -m shell -a "curl -I http://localhost"
+***
 
-🔄 Idempotence
+## 🔄 Idempotence
 
-text
-1ère exécution : 18 tasks changed ✅
-2ème exécution : 0 tasks changed ✅
-3ème exécution : 0 tasks changed ✅
+- 1ère exécution : installation + configuration = `changed`
+- Exécutions suivantes : **0 changed** si configuration identique
 
-📁 Role Structure
+***
 
-text
+## 📁 Structure du rôle
+
+```text
 nginx_role/
-├── 📁 defaults/
-│   └── main.yml              # Variables par défaut
-├── 📁 tasks/
-│   └── main.yml              # Tâches principales
-├── 📁 templates/
-│   ├── nginx.conf.j2         # Config globale
-│   └── sites-available-default.j2  # VHosts
-├── 📁 handlers/
-│   └── main.yml              # Restart + test
-├── 📁 meta/
-│   └── main.yml              # Métadonnées Galaxy
-├── 📁 tests/
-│   └── test.yml              # Tests Molecule
-└── 📄 README.md              # Documentation
+├── defaults/
+│   └── main.yml          # Variables par défaut
+├── tasks/
+│   ├── install.yml     # Installation NGINX
+│   ├── config.yml      # Configuration sites
+│   └── main.yml        # Inclusion selon variables
+├── templates/
+│   ├── nginx.conf.j2   # Template NGINX
+│   └── site.conf.j2    # Template site
+├── handlers/
+│   └── main.yml        # Restart NGINX
+├── meta/
+│   └── main.yml        # Métadonnées Galaxy
+└── README.md           # Ce fichier
+```
 
-🎨 Tags disponibles
-Tag	Description
-nginx_install	Installation paquets
-nginx_config	Configuration globale
-nginx_sites	VirtualHosts
-nginx_service	Service management
-nginx_test_config	Validation syntaxe
 
-bash
-ansible-playbook site.yml --tags "nginx_sites,nginx_service"
+***
 
-🖥️ Compatibilité
-OS Family	Versions	NGINX	Statut
-Debian	11, 12	1.18.x-1.24.x	✅ Production
-Ubuntu	20.04, 22.04, 24.04	1.18.x-1.24.x	✅ Production
-RHEL	8, 9	1.20.x+	✅ Testé
-🔐 Sécurité
+## 🚀 Avantages
 
-    ✅ Handlers testent config avant restart (nginx -t)
+- Installation officielle NGINX
+- Configuration centralisée sites/SSL
+- Idempotence et logging structuré
+- Prêt pour serveurs web et reverse proxy
 
-    ✅ Permissions 644 sur configs
+***
 
-    ✅ Backup automatique configs modifiées
+## 🤝 Contributing
 
-    ✅ No root execution (www-data user)
+1. Fork → Ajouter gestion SSL → Test
+2. `molecule test` obligatoire
+3. Pull Request avec tests
 
-🚀 Use Cases
+***
 
-    Serveur web statique multi-sites
+## 🆘 Support
 
-    Reverse proxy Node.js/PHP/Python
+- ❓ Questions : GitHub Issues
+- 🐛 Bugs : Sortie `nginx -t` + logs
+- 🚀 Features : Ajout gestion load balancing, HTTP/2
 
-    Load balancer simple
+***
 
-    API Gateway interne
+## 📜 License
 
-    LEMP stack avec php-fpm_role
+MIT License - [LICENSE](LICENSE)
 
-📈 Performance
+***
 
-text
-Worker processes : auto (CPU cores)
-Max connexions   : 1024+ par worker
-Keepalive        : 65s optimisé
-TCP tuning       : sendfile, tcp_nopush
+**Rôle complet et sécurisé pour l’installation et la configuration de NGINX sur toute infrastructure Linux moderne.** 🌐🚀
 
-🤝 Contributing
-
-    Fork → Clone → Create feature branch
-
-    molecule test avant push
-
-    Pull Request avec tests ✅
-
-    Suivre CONTRIBUTING.md
-
-🆘 Support
-
-    ❓ Questions : Issues GitHub
-
-    🐛 Bugs : Label bug + molecule test output
-
-    🚀 Features : Label enhancement
-
-📜 License
-
-MIT License - voir LICENSE
-
-text
-Copyright (c) 2025 User Ansible Roles
-
-📊 Release Notes
-Version	Date	Changes
-v1.0.0	2025-11	Initial release
-v1.1.0	Future	SSL auto + HTTP/2
-
-Changelog complet : CHANGELOG.md
-🔗 Liens utiles
-
-    Ansible Galaxy
-
-    Documentation NGINX
-
-    Molecule Testing
-
-Rôle production-ready, idempotent, testé, prêt pour LEMP stacks et reverse proxy haute performance ! 🚀

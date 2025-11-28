@@ -1,9 +1,0 @@
----
-- name: Installer Python 3 sur serveurs Debian et RedHat
-  hosts: all
-  become: yes
-
-  roles:
-    - role: python3_role
-# Ce rôle installe Python 3, pip et les outils virtuels adaptés à la famille d’OS cible
-# (Debian/Ubuntu ou RedHat/CentOS) de façon idempotente et optimale.
